@@ -31,9 +31,9 @@ $screenHeight: -1 !default;
 }
 
 .input_ui_container {
-  width:100vmin;
-  height:100vmin;
-  position: relative;
+  width:80vmin;
+  height:80vmin;
+  position: fixed;
 
   display: flex;
   flex-direction: column;

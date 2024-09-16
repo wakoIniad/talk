@@ -1,23 +1,12 @@
 import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
-import { off } from 'process';
+
+import Romanizer from './romaji-hira-convert';
+import { ButtonLayers, ButtonElement } from './layer-ui'
 
 const UI_BORDER_WEIGHT = 20;//px
-let uiDivisionCount = 4;
-
-/**
- * ブラウザ側処理
- *
-Next.js はPre-redndering(SSR,SSG)がサポートされているので、
-Hooksでブラウザ側にしか存在しないグローバルオブジェクトのwindowやdocumentを参照する場合には必ず
-windowが存在するか確認する もしくは useEffect
-(https://zenn.dev/developanda/articles/daf34873fe4ef4)
-
-また、scssのコンパイルなどはブラウザ側で実行されるわけではないと思われるので、ブラウザ側で取得した情報は
-useStateなどで共有する
- */
-
+let uiDivisionCount = 10;
 
 
 function uiClicked(args: {id: number, type: string}) {
@@ -25,6 +14,16 @@ function uiClicked(args: {id: number, type: string}) {
   console.log(id,type)
 }
 
+const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
+  .map(consonant=>'aiueo'.split('')
+    .map(vowel=>Romanizer(consonant+vowel))
+    .map(hiragana=>new ButtonElement({name: hiragana, value: hiragana}))
+  ).map(hiraganaList=>new ButtonElement({
+    name: hiraganaList[0].displayName + "行",
+    value: null,
+    children: new ButtonLayers(hiraganaList)
+  })));
+console.log(layer)
 const Home = () => {
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
@@ -116,14 +115,3 @@ function getWindowSize() {
   }, []);
   return windowSize;
 };
-
-class ObjectNumber extends Number {
-  [key: string]: any;
-  constructor(main: number,sub: {[key: string]: number} = {}) {
-    console.log(sub)
-    super(main);
-    for( const [key, value] of Object.entries(sub) ) {
-      this[key] = value;
-    }
-  }
-}
