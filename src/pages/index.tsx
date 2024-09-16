@@ -55,17 +55,21 @@ const Home = () => {
                 f:(rad: number) => number,
                 i:number
               ) => {
-
-                (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2
+                const v = f(2*Math.PI/uiDivisionCount*i);
+                //return new ObjectNumber(, {'raw': v});
+                return [
+                  (1+v*(1+zeroOneScaleBorderWeight*2))/2,
+                  v,
+                ]
               }
 
-              const ax = getPos(Math.cos, i);
-              const ay = getPos(Math.sin, i);
-              const bx = getPos(Math.cos, i+1);
-              const by = getPos(Math.sin, i+1);
+              const [ ax, ax_raw ] = getPos(Math.cos, i);
+              const [ ay, ay_raw ] = getPos(Math.sin, i);
+              const [ bx, bx_raw ] = getPos(Math.cos, i+1);
+              const [ by, by_raw ] = getPos(Math.sin, i+1);
 
-              const mx = 0.9*(ax + bx)/2+0.05;
-              const my = 0.9*(ay + by)/2+0.05;
+              const mx = (1-zeroOneScaleBorderWeight)*(ax_raw + bx_raw)/2+0.05;
+              const my = 0.9*(ay_raw + by_raw)/2+0.05;
               svgs.push(
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
@@ -109,15 +113,13 @@ function getWindowSize() {
   return windowSize;
 };
 
-class NumberFunction extends Number {
-  private callback: ()=>any;
-  constructor(input: number) {
-    super(input);
-    this.callback = ()=>{};
-  }
-
-  calc(callback: ()=>any = this.callback) {
-    this.callback = callback;
-    return callback();
+class ObjectNumber extends Number {
+  [key: string]: any;
+  constructor(main: number,sub: {[key: string]: number} = {}) {
+    console.log(sub)
+    super(main);
+    for( const [key, value] of Object.entries(sub) ) {
+      this[key] = value;
+    }
   }
 }
