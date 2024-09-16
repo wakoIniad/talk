@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
 
+const UI_BORDER_WEIGHT = 5;//px
 let uiDivisionCount = 4;
 
 /**
@@ -44,28 +45,30 @@ const Home = () => {
               <button
                 className={`${styles.input_ui_btn} ${styles[`input_ui_btn_circumference_${i}`]}`}
                 onClick={()=>uiClicked({ type:"ring", id:i })}
+                style={{ clipPath: `url(#btn_clip_${i})` }}
               ></button>);
 
               const getPos = (
                 f:(rad: number) => number,
                 i:number
               ) => (1+f(2*Math.PI/uiDivisionCount*i))/2;
-              /*
-              const xa = (1+Math.sin(Math.PI/uiDivisionCount * i))/2;
-              const ya = (1+Math.sin(Math.PI/uiDivisionCount * i))/2;
-              const xb = (1+Math.sin(Math.PI/uiDivisionCount * (i + 1)))/2;
-              const yb = (1+Math.sin(Math.PI/uiDivisionCount * (i + 1)))/2;
-              */
 
-              const xa = getPos(Math.sin, i);
-              const ya = getPos(Math.cos, i);
-              const xb = getPos(Math.sin, i+1);
-              const yb = getPos(Math.cos, i+1);
+              const ax = getPos(Math.cos, i);
+              const ay = getPos(Math.sin, i);
+              const bx = getPos(Math.cos, i+1);
+              const by = getPos(Math.sin, i+1);
+              /**
+                  width="100" height="100"
+                  xmlns="http://www.w3.org/2000/svg"
+               */
+
+              const mx = 0.9*(ax + bx)/2+0.05;
+              const my = 0.9*(ay + by)/2+0.05;
               svgs.push(
-                <svg width="100" height="100">
-                    <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
-                      <path d={`M 0.5 0.5 L ${xa} ${ya} A 0.5 0.5 0 0 ${xb} ${yb} L Z`} fill="none"/>
-                    </clipPath>
+                <svg>
+                  <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
+                    <path d={`M 0.5 0.5 L ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
+                  </clipPath>
                 </svg>
               );
             }
