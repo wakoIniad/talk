@@ -58,16 +58,9 @@ $screenHeight: -1 !default;
 
   /*$right-bit: $i % 2;
   $left-bit:floor($i / 2);*/
-  $slicedAngle: 360deg / $uiDivisionCount;
-  $sinA: math.sin( $slicedAngle * $i );
-  $cosA: math.cos( $slicedAngle * $i );
-
-  $sinB: math.sin( $slicedAngle * ($i + 1) );
-  $cosB: math.cos( $slicedAngle * ($i + 1) );
-
   $vmin_: min(screenWidth,screenHeight);
   .input_ui_btn_circumference_#{$i} {
-    clip-path: path('M '+ var(--vmin));
+    clip-path: url(#btn_clip_#{$i});;
     /*clip-path: polygon(
       100% * $left-bit 100% * $right-bit ,
       100% * $left-bit 50%,
