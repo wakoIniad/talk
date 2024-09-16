@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './index.module.scss';
 import { off } from 'process';
 
-const UI_BORDER_WEIGHT = 5;//px
+const UI_BORDER_WEIGHT = 20;//px
 let uiDivisionCount = 4;
 
 /**
@@ -77,7 +77,7 @@ const Home = () => {
               svgs.push(
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
-                    <path d={`M ${mx} ${my} L ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
+                    <path d={`M ${mx} ${my} l ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
                   </clipPath>
                 </svg>
               );
