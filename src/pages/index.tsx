@@ -55,9 +55,17 @@ const Home = () => {
               const getPos = (
                 f:(rad: number) => number,
                 i:number
-              ) => (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2
+              ) => {
+                const V = f(2*Math.PI/uiDivisionCount*i);
+                return [
+                  minorAdjuster(V, 1 + zeroOneScaleBorderWeight*2),
+                  V,
+                ];
+              }
+              const minorAdjuster = ( original: number, delta: number , offset: number = 1 ) =>
+                offset + ( original * ( delta ) ) / 2;
 
-              const [ ax, ay, bx, by, ] =
+              const [ [ ax, ax_raw ], [ ay, ay_raw ], [ bx, bx_raw ], [ by, by_raw ] ] =
                 [ { method: Math.cos, index: i },
                   { method: Math.sin, index: i },
                   { method: Math.cos, index: i + 1 },
@@ -66,8 +74,8 @@ const Home = () => {
                   method: (rad:number)=>number,
                   index: number
                 }) => getPos(method, index) );
-              const mx = zeroOneScaleBorderWeight*(ay + by)/2 + 0.5 * (1-zeroOneScaleBorderWeight);
-              const my = zeroOneScaleBorderWeight*(ay + by)/2 + 0.5 * (1-zeroOneScaleBorderWeight);
+              const mx = minorAdjuster(ax_raw + bx_raw, zeroOneScaleBorderWeight, 0.5);
+              const my = minorAdjuster(ay_raw + by_raw, zeroOneScaleBorderWeight, 0.5);
 
               //const [ ax, ax_raw ] = getPos(Math.cos, i);
               //const [ ay, ay_raw ] = getPos(Math.sin, i);
@@ -77,7 +85,7 @@ const Home = () => {
               svgs.push(
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
-                    <path d={`M ${mx} ${my} l ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
+                    <path d={`M ${mx} ${my} l ${ax} ${ay} a 0.5 0.5 0 0 1 ${bx - ax} ${by - ay} Z`} fill="none"/>
                   </clipPath>
                 </svg>
               );
