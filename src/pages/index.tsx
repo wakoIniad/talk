@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
+import { off } from 'process';
 
 const UI_BORDER_WEIGHT = 5;//px
 let uiDivisionCount = 4;
@@ -55,21 +56,34 @@ const Home = () => {
                 f:(rad: number) => number,
                 i:number
               ) => {
-                const v = f(2*Math.PI/uiDivisionCount*i);
+                const v =
                 //return new ObjectNumber(, {'raw': v});
                 return [
                   (1+v*(1+zeroOneScaleBorderWeight*2))/2,
                   v,
                 ]
+                return f(2*Math.PI/uiDivisionCount*i);
               }
+              const minorAdjuster = ( original: number, offset: number ) =>
+                ( 1 + original * ( 1 + offset ) ) / 2;
 
-              const [ ax, ax_raw ] = getPos(Math.cos, i);
-              const [ ay, ay_raw ] = getPos(Math.sin, i);
-              const [ bx, bx_raw ] = getPos(Math.cos, i+1);
-              const [ by, by_raw ] = getPos(Math.sin, i+1);
+              const [ ax, ay, bx, by ] =
+                [ { method: Math.cos, index: i },
+                  { method: Math.sin, index: i },
+                  { method: Math.cos, index: i + 1 },
+                  { method: Math.sin, index: i + 1 },
+                ].map( ({method, index}: {
+                  method: (rad:number)=>number,
+                  index: number
+                }) => getPos(method, index) );
+              const mx = (1-zeroOneScaleBorderWeight)*(ax + bx)/2+0.05;
+              const my = 0.9*(ay + by)/2+0.05;
 
-              const mx = (1-zeroOneScaleBorderWeight)*(ax_raw + bx_raw)/2+0.05;
-              const my = 0.9*(ay_raw + by_raw)/2+0.05;
+              //const [ ax, ax_raw ] = getPos(Math.cos, i);
+              //const [ ay, ay_raw ] = getPos(Math.sin, i);
+              //const [ bx, bx_raw ] = getPos(Math.cos, i+1);
+              //const [ by, by_raw ] = getPos(Math.sin, i+1);
+
               svgs.push(
                 <svg xmlns="http://www.w3.org/2000/svg">
                   <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
