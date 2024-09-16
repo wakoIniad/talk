@@ -54,7 +54,10 @@ const Home = () => {
               const getPos = (
                 f:(rad: number) => number,
                 i:number
-              ) => (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2;
+              ) => {
+
+                (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2
+              }
 
               const ax = getPos(Math.cos, i);
               const ay = getPos(Math.sin, i);
@@ -105,3 +108,16 @@ function getWindowSize() {
   }, []);
   return windowSize;
 };
+
+class NumberFunction extends Number {
+  private callback: ()=>any;
+  constructor(input: number) {
+    super(input);
+    this.callback = ()=>{};
+  }
+
+  calc(callback: ()=>any = this.callback) {
+    this.callback = callback;
+    return callback();
+  }
+}
