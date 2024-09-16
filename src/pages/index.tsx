@@ -25,6 +25,9 @@ function uiClicked(args: {id: number, type: string}) {
 }
 
 const Home = () => {
+  const { width, height } = getWindowSize();
+  const vmin = Math.min(width, height);
+  const zeroOneScaleBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT;
   return (
     <div className={styles.container}>
       <div className={styles.input_ui_container}>
@@ -51,28 +54,24 @@ const Home = () => {
               const getPos = (
                 f:(rad: number) => number,
                 i:number
-              ) => (1+f(2*Math.PI/uiDivisionCount*i))/2;
+              ) => (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2;
 
               const ax = getPos(Math.cos, i);
               const ay = getPos(Math.sin, i);
               const bx = getPos(Math.cos, i+1);
               const by = getPos(Math.sin, i+1);
-              /**
-                  width="100" height="100"
-                  xmlns="http://www.w3.org/2000/svg"
-               */
 
               const mx = 0.9*(ax + bx)/2+0.05;
               const my = 0.9*(ay + by)/2+0.05;
               svgs.push(
-                <svg>
+                <svg xmlns="http://www.w3.org/2000/svg">
                   <clipPath id={`btn_clip_${i}`} clipPathUnits="objectBoundingBox">
-                    <path d={`M 0.5 0.5 L ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
+                    <path d={`M ${mx} ${my} L ${ax} ${ay} A 0.5 0.5 0 0 1 ${bx} ${by} Z`} fill="none"/>
                   </clipPath>
                 </svg>
               );
             }
-            return [...buttons,...svgs];
+            return [...svgs,...buttons];
           })()
         }
       </div>
@@ -81,3 +80,28 @@ const Home = () => {
 };
 
 export default Home;
+
+function getWindowSize() {
+  const [windowSize, setWindowSize] = useState({
+    width: -1,
+    height: -1,
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleResize = () => {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      window.addEventListener("resize", handleResize);
+      handleResize();
+      return () => window.removeEventListener("resize", handleResize);
+    } else {
+      return;
+    }
+  }, []);
+  return windowSize;
+};
