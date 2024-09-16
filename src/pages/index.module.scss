@@ -50,7 +50,7 @@ $screenHeight: -1 !default;
 
   z-index: 3;
 
-  @include drop_shadow_border(100px);
+  @include drop_shadow_border(10px);//100px
 }
 
 
