@@ -55,18 +55,9 @@ const Home = () => {
               const getPos = (
                 f:(rad: number) => number,
                 i:number
-              ) => {
-                const v = f(2*Math.PI/uiDivisionCount*i);
-                //return new ObjectNumber(, {'raw': v});
-                return [
-                  minorAdjuster( v, zeroOneScaleBorderWeight*2 ),
-                  v,
-                ]
-              }
-              const minorAdjuster = ( original: number, offset: number ) =>
-                ( 1 + original * ( 1 + offset ) ) / 2;
+              ) => (1+f(2*Math.PI/uiDivisionCount*i)*(1+zeroOneScaleBorderWeight*2))/2
 
-              const [ [ ax, ax_raw ], [ ay, ay_raw ], [ bx, bx_raw ], [ by, by_raw ] ] =
+              const [ ax, ay, bx, by, ] =
                 [ { method: Math.cos, index: i },
                   { method: Math.sin, index: i },
                   { method: Math.cos, index: i + 1 },
@@ -75,9 +66,8 @@ const Home = () => {
                   method: (rad:number)=>number,
                   index: number
                 }) => getPos(method, index) );
-              const mx = minorAdjuster( (ax_raw + bx_raw)/2, -zeroOneScaleBorderWeight*2);
-              const my = minorAdjuster( (ay_raw + by_raw)/2, -zeroOneScaleBorderWeight*2)
-              //( 1 - zeroOneScaleBorderWeight )*(ay_raw + by_raw)/2 + 0.5 * zeroOneScaleBorderWeight;
+              const mx = zeroOneScaleBorderWeight*(ay + by)/2 + 0.5 * (1-zeroOneScaleBorderWeight);
+              const my = zeroOneScaleBorderWeight*(ay + by)/2 + 0.5 * (1-zeroOneScaleBorderWeight);
 
               //const [ ax, ax_raw ] = getPos(Math.cos, i);
               //const [ ay, ay_raw ] = getPos(Math.sin, i);
