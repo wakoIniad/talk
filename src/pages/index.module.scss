@@ -31,8 +31,8 @@ $screenHeight: -1 !default;
 }
 
 .input_ui_container {
-  width:80vmin;
-  height:80vmin;
+  width:100vmin;
+  height:100vmin;
   position: fixed;
 
   display: flex;
@@ -59,7 +59,7 @@ $screenHeight: -1 !default;
   $right-bit: $i % 2;
   $left-bit:floor($i / 2);
 
-  .input_ui_btn_circumference_#{$i} {
+  .input_ui_btn_1_#{$i} {
     clip-path: polygon(
       100% * $left-bit 100% * $right-bit ,
       100% * $left-bit 50%,
@@ -70,7 +70,7 @@ $screenHeight: -1 !default;
   */
 }
 
-.input_ui_btn_center {
+.input_ui_btn_0 {
   width: 50%;
   height: 50%;
   background-color: rgb(220,220,220);
