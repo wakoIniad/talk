@@ -1,59 +1,89 @@
-import styles from './index.module.css';
+import { useState, useEffect } from 'react';
+
+import styles from './index.module.scss';
+
+let uiDivisionCount = 4;
+styles.uiDivisionCount = uiDivisionCount;
+
+/**
+ * ブラウザ側処理
+ *
+Next.js はPre-redndering(SSR,SSG)がサポートされているので、
+Hooksでブラウザ側にしか存在しないグローバルオブジェクトのwindowやdocumentを参照する場合には必ず
+windowが存在するか確認する
+(https://zenn.dev/developanda/articles/daf34873fe4ef4)
+
+また、scssのコンパイルなどはブラウザ側で実行されるわけではないと思われるので、ブラウザ側で取得した情報は
+useStateなどで共有する
+ */
+if (typeof window !== "undefined") {
+  const [windowSize, setWindowSize] = useState({
+    width: undefined,
+    height: undefined,
+  });
+
+  const screenWidth = window.innerWidth();
+  const screenHeight = window.innerHeight();
+  styles.screenWidth = screenWidth;
+  styles.screenHeight = screenHeight;
+}
+
+
+function uiClicked(args: {id: number, type: string}) {
+  const {id, type} = args;
+  console.log(id,type)
+}
 
 const Home = () => {
   return (
     <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code} style={{ backgroundColor: '#fafafa' }}>
-            pages/index.js
-          </code>
-        </p>
-
-        <div className={styles.grid}>
-          <a className={styles.card} href="https://nextjs.org/docs">
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a className={styles.card} href="https://nextjs.org/learn">
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a className={styles.card} href="https://github.com/vercel/next.js/tree/master/examples">
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            className={styles.card}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>Instantly deploy your Next.js site to a public URL with Vercel.</p>
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <img src="vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
+      <div className={styles.input_ui_container}>
+        {
+          (function(){
+            const buttons = [
+              <button
+                className={`${styles.input_ui_btn} ${styles.input_ui_btn_center}`}
+                onClick={()=>uiClicked({ type:"center", id:uiDivisionCount })}
+              ></button>
+            ];
+            for(let i = 0;i < uiDivisionCount;i++) {
+              buttons.push(
+              <button
+                className={`${styles.input_ui_btn} ${styles[`input_ui_btn_circumference_${i}`]}`}
+                onClick={()=>uiClicked({ type:"ring", id:i })}
+              ></button>);
+            }
+            return buttons;
+          })()
+        }
+      </div>
     </div>
   );
 };
 
 export default Home;
+
+function useWindowSize() {
+  // Initialize state with undefined width/height so server and client renders match
+  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
+  const [windowSize, setWindowSize] = useState({
+    width: undefined,
+    height: undefined,
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); // Empty array ensures that effect is only run on mount
+  return windowSize;
+}

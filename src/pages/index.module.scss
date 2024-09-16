@@ -1,0 +1,101 @@
+
+/**
+ * pre-processing of SCSS
+*/
+@use "sass:math";
+
+$uiDivisionCount: 4 !default;
+$screenWidth: -1 !default;
+$screenHeight: -1 !default;
+
+/**
+ * parts styles
+*/
+
+@mixin drop_shadow_border($weight: 1px, $color:#999) {
+  border-style: none;
+  filter: drop-shadow(0px 0px $weight $color);
+}
+
+
+/**
+ * frame styles
+*/
+.container {
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.input_ui_container {
+  width:100vmin;
+  height:100vmin;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.input_ui_btn {
+  position: absolute;
+  background-color: rgb(255,255,255);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+
+  z-index: 3;
+
+  @include drop_shadow_border;
+}
+
+@for $i from 0 to $uiDivisionCount {
+
+  /*$right-bit: $i % 2;
+  $left-bit:floor($i / 2);*/
+  $slicedAngle: 360deg / $uiDivisionCount;
+  $sinA: math.sin( $slicedAngle * $i );
+  $cosA: math.cos( $slicedAngle * $i );
+
+  $sinB: math.sin( $slicedAngle * ($i + 1) );
+  $cosB: math.cos( $slicedAngle * ($i + 1) );
+
+  $vmin_: min(screenWidth,screenHeight);
+  .input_ui_btn_circumference_#{$i} {
+    clip-path: path('M '+ var(--vmin));
+    /*clip-path: polygon(
+      100% * $left-bit 100% * $right-bit ,
+      100% * $left-bit 50%,
+      50% 50% ,
+      50% 100% * $right-bit
+    );*/
+  }
+}
+
+.input_ui_btn_center {
+  width: 50%;
+  height: 50%;
+  background-color: rgb(220,220,220);
+
+  z-index: 4;
+}
+
+/**
+ * post-processing of SCSS
+*/
+
+:export {
+  uiDivisionCount: $uiDivisionCount;
+  screenWidth: $screenWidth;
+  screenHeight: $screenHeight;
+}
+
+/*$testv: 100vmin;
+$testv2 : strip-unit($testv);
+@debug $testv;
+@debug $testv2;*/
