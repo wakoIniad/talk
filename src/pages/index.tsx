@@ -15,6 +15,13 @@ const usingUiInitial = [
   {from: 0, to:0}
 ];
 
+const pallet = [
+  'rgb(139,27,29)', 'rgb(240,211,0)', 'rgb(10,150,51)', 'rgb(109,183,196)', 'rgb(7,132,186)',
+];
+const pallet2 = [
+  'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
+];
+
 const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
 
 const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
@@ -60,10 +67,16 @@ const Home = () => {
     id: number;
     size: number;
     using: boolean;
+    styleSettings?: {[key:string]:any}
   }
 
-  function makeButton( {layer = -1, id = -1, size = -1, using=false}:Partial<makeButtonInterFace> ) {
-    if(id === 0 && layer == 2)console.log(layer,id,using);
+  function makeButton( {
+    layer = -1,
+    id = -1,
+    size = -1,
+    using = false,
+    styleSettings = {},
+  }:Partial<makeButtonInterFace> ) {
     const divisionCount = uiDivisionCounts[layer];
     id = loopIndex(divisionCount, id);
     const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size;
@@ -81,7 +94,8 @@ const Home = () => {
           width: `${100*size*activation_flag}%`,
           height: `${100*size*activation_flag}%`,
           opacity: activation_flag,
-          visibility: `${using? 'visible': 'hidden'}`
+          visibility: `${using? 'visible': 'hidden'}`,
+          ...styleSettings,
         }}
       ></button>;
 
@@ -130,17 +144,26 @@ const Home = () => {
             for(let i = 0;i < usingUI.length; i++) {
               const using = usingUI[i];
               for(let j = using.from;j < using.from + uiDivisionCounts[i];j++) {
-                //if((using.from <= j) && (j < using.to)) {
-                  const { button, svg } = makeButton({
+                const config:{[key:string]:any} = {
                   layer: i,
                   id: j,
                   size: UI_RING_WEGIHT_EACH_LAYER[i],
                   using: (using.from <= j) && (j < using.to)
-                });
+                }
+                switch(i) {
+                  case 2:
+                    if(config.using === true) {
+                      config.styleSettings = {};
+
+                      const palletIndex = j-using.from;
+                      config.styleSettings.backgroundColor = pallet[palletIndex];
+                    }
+                    break;
+                }
+                const { button, svg } = makeButton(config);
                 buttons.push(button);
                 svgs.push(svg);
-                }
-              //}
+              }
             }
 
 
