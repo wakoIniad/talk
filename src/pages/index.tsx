@@ -391,7 +391,9 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
-        {messageText}
+        <span className={`${styles.message_text}`}>
+            {messageText}
+        </span>
       </div>
       <div className={styles.input_ui_container}>
         {
