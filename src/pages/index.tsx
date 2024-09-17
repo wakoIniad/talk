@@ -111,28 +111,6 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
-    const button =
-      <button
-        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
-        ${styles[`input_ui_btn_${layer}_${id}`]}
-        ${using ? styles.ExpansionRing : '' }`
-        }
-        onClick={()=>uiClicked({ layer:layer, id:id })}
-        style={{
-          width: `${100*size*activation_flag}%`,
-          height: `${100*size*activation_flag}%`,
-          opacity: activation_flag,
-          visibility: `${using? 'visible': 'hidden'}`,
-          ...()=> {
-            return using ? {
-              backgroundImage: `url(#btn_visual_${layer}_${id})`,
-              clipPath: `url(#btn_clip_${layer}_${id})`,
-            }:{};
-          },
-          ...styleSettings,
-        }}
-      ></button>;
-
     const getPos = (
       f:(rad: number) => number,
       i:number
@@ -180,7 +158,29 @@ const Home = () => {
         {getUiElementFromLayer(layer,rawId).displayName}
       </text>
     </svg>: '';
-    return { button, svg, svg2 };
+
+const button =
+<button
+  className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+  ${styles[`input_ui_btn_${layer}_${id}`]}
+  ${using ? styles.ExpansionRing : '' }`
+  }
+  onClick={()=>uiClicked({ layer:layer, id:id })}
+  style={{
+    width: `${100*size*activation_flag}%`,
+    height: `${100*size*activation_flag}%`,
+    opacity: activation_flag,
+    visibility: `${using? 'visible': 'hidden'}`,
+    ...()=> {
+      return using ? {
+        backgroundImage: `url(#btn_visual_${layer}_${id})`,
+        clipPath: `url(#btn_clip_${layer}_${id})`,
+      }:{};
+    },
+    ...styleSettings,
+  }}
+>{svg2}</button>;
+    return { button, svg, svg2:'' };
   }
   return (
     <div className={styles.container}>
