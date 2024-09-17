@@ -24,7 +24,7 @@ const pallet2 = [
 
 const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
 
-const layer = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
+const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
     .map(vowel=>Romanizer(consonant+vowel))
     .map(hiragana=>new ButtonElement({name: hiragana, value: hiragana}))
@@ -34,7 +34,7 @@ const layer = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
     children: new ButtonLayers(...hiraganaList)
   })));
 
-function loopIndex( length: number, n: number ) {
+function loopIndex( length: number, n: number ):number {
   return (length + n)%length;
 }
 const Home = () => {
@@ -73,6 +73,21 @@ const Home = () => {
     styleSettings?: {[key:string]:any}
   }
 
+  function getUiElementFromLayer(layer: number, rawId: number):ButtonElement {
+    switch(layer) {
+      case 0:
+        break;
+      case 1:
+        return LayerArray[rawId];
+      case 2:
+        const rootId = activeButtons[1];
+        const arcId = rawId - usingUI[2].from;
+        return LayerArray[rootId].children[arcId];
+    }
+
+    return new ButtonElement({name: '', value: ''});
+  }
+
   function makeButton( {
     layer = -1,
     id = -1,
@@ -81,7 +96,8 @@ const Home = () => {
     styleSettings = {},
   }:Partial<makeButtonInterFace> ) {
     const divisionCount = uiDivisionCounts[layer];
-    id = loopIndex(divisionCount, id);
+    const rawId = id;
+    id = loopIndex(divisionCount, rawId);
     const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size;
     const activation_flag = using ? 1: 0;
 
@@ -98,6 +114,7 @@ const Home = () => {
           height: `${100*size*activation_flag}%`,
           opacity: activation_flag,
           visibility: `${using? 'visible': 'hidden'}`,
+          backgroundImage: `url(#btn_visual_${layer}_${id})`,
           ...styleSettings,
         }}
       ></button>;
@@ -134,15 +151,20 @@ const Home = () => {
     const tx = minorAdjuster(mx, 1-reScaledBorderWeight, 0.5);
     const ty = minorAdjuster(my, 1-reScaledBorderWeight, 0.5);
     const svg2 =
-      <svg
+      using? <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="-1 -1 1 1"
         width={`${100*size*activation_flag}%`}
         height={`${100*size*activation_flag}%`}
-      ><text x={`${tx}`} y={`${ty}`} font-size="5em" stroke="black" text-anchor="middle" stroke-width="0.5px" >
-
-        </text>
-      </svg>;
+        id={`btn_visual_${layer}_${id}`}
+      ><text
+        x={`${tx}`} y={`${ty}`}
+        font-size="5em" stroke="black"
+        text-anchor="middle" stroke-width="0.5px"
+      >
+        {getUiElementFromLayer(layer,rawId).displayName}
+      </text>
+    </svg>: <svg id={`btn_visual_${layer}_${id}`}></svg>;
     return { button, svg, svg2 };
   }
   return (
@@ -157,6 +179,10 @@ const Home = () => {
 
             const svgs = [
               centerBtn.svg,
+            ];
+
+            const svg2s = [
+              centerBtn.svg2,
             ];
 
             for(let i = 0;i < usingUI.length; i++) {
@@ -181,11 +207,12 @@ const Home = () => {
                 const { button, svg, svg2 } = makeButton(config);
                 buttons.push(button);
                 svgs.push(svg);
+                svg2s.push(svg2);
               }
             }
 
 
-            return [...svgs,...buttons];
+            return [...svgs,...svg2s,...buttons,];
           })()
         }
       </div>
