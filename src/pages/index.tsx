@@ -12,8 +12,8 @@ const UI_STROKE_WEIGHT = 3;
 const uiDivisionCounts = [ 1.001, 2, 30-5 ];
 
 const usingUiInitial = [
-  {from: 0, to: uiDivisionCounts[0]},
-  {from: 0, to: uiDivisionCounts[1]},
+  {from: 0, to: 1},
+  {from: 0, to: 3},
   {from: 0, to:0}
 ];
 
@@ -111,6 +111,26 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
+    if(using) {
+      styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
+      styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
+    }
+    const button =
+      <button
+        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+        ${styles[`input_ui_btn_${layer}_${id}`]}
+        ${using ? styles.ExpansionRing : '' }`
+        }
+        onClick={()=>uiClicked({ layer:layer, id:id })}
+        style={{
+          width: `${100*size*activation_flag}%`,
+          height: `${100*size*activation_flag}%`,
+          opacity: activation_flag,
+          visibility: `${using? 'visible': 'hidden'}`,
+          ...styleSettings,
+        }}
+      ></button>;
+
     const getPos = (
       f:(rad: number) => number,
       i:number
@@ -140,8 +160,9 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx, 1-rescaledBorderWeight, 0.5).div(2).plus(0.5);
-    const ty = minorAdjuster(my, 1-rescaledBorderWeight, 0.5).div(2).plus(0.5);
+    const tx = minorAdjuster(mx, (1-rescaledBorderWeight)/2, 0.5);
+    const ty = minorAdjuster(my, (1-rescaledBorderWeight)/2, 0.5);
+    if(layer === 1)console.log(id, tx,ty);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -152,35 +173,13 @@ const Home = () => {
         preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size={rescaledFontSize*3} stroke="black"
+        font-size={rescaledFontSize*2} stroke="green" fill="white"
         text-anchor="middle" stroke-width={rescaledStrokeWeight}
       >
         {getUiElementFromLayer(layer,rawId).displayName}
       </text>
     </svg>: '';
-
-const button =
-<button
-  className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
-  ${styles[`input_ui_btn_${layer}_${id}`]}
-  ${using ? styles.ExpansionRing : '' }`
-  }
-  onClick={()=>uiClicked({ layer:layer, id:id })}
-  style={{
-    width: `${100*size*activation_flag}%`,
-    height: `${100*size*activation_flag}%`,
-    opacity: activation_flag,
-    visibility: `${using? 'visible': 'hidden'}`,
-    ...()=> {
-      return using ? {
-        backgroundImage: `url(#btn_visual_${layer}_${id})`,
-        clipPath: `url(#btn_clip_${layer}_${id})`,
-      }:{};
-    },
-    ...styleSettings,
-  }}
->{svg2}</button>;
-    return { button, svg, svg2:'' };
+    return { button, svg, svg2 };
   }
   return (
     <div className={styles.container}>
