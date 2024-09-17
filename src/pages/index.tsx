@@ -138,19 +138,19 @@ const Home = () => {
 
           if(inputElm.displayName === 'delete') {
             const hiragana = updateText.slice(-1);
-            console.log(hiragana,r.romanize(hiragana).toLowerCase());
-            optCheckResult = optionableChecker(
-              r.romanize(hiragana).toLowerCase(),
-              hiragana,
-              {
-                exclude:
-                  deleted === DAKUTEN_UNICODE ? ['dakuten']:
-                  deleted === HANDAKUTEN_UNICODE ?  ['handakuten']
-                :['dakuten','handakuten','small'],
-              }
-            );
-            if(optCheckResult) enableDelete = true;
-            console.log(enableDelete);
+            if(hiragana) {
+              optCheckResult = optionableChecker(
+                r.romanize(hiragana).toLowerCase(),
+                hiragana,
+                {
+                  exclude:
+                    deleted === DAKUTEN_UNICODE ? ['dakuten']:
+                    deleted === HANDAKUTEN_UNICODE ?  ['handakuten']
+                  :['dakuten','handakuten','small'],
+                }
+              );
+              if(optCheckResult) enableDelete = true;
+            }
           }
         }
         if(optCheckResult) {/**optを優先の為space&del無効化 */
@@ -170,6 +170,7 @@ const Home = () => {
         if(enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
+        setUsingCenterUI({...usingCenterUI});
         break;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
@@ -203,6 +204,7 @@ const Home = () => {
           });
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
+        setUsingCenterUI({...usingCenterUI});
         break;
     }
 
@@ -253,7 +255,6 @@ const Home = () => {
       optionIsAvaliable = true;
     }
 
-    setUsingCenterUI({...usingCenterUI});
     return optionIsAvaliable;
   }
 
