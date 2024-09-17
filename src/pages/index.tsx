@@ -6,12 +6,14 @@ import Romanizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
 
 const UI_BORDER_WEIGHT = 40;//px
+const UI_FONT_SIZE = 20;//px UI_FONT_SIZE(px) = 1em
+const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 1.001, 10, 30-5 ];
+const uiDivisionCounts = [ 1.001, 2, 30-5 ];
 
 const usingUiInitial = [
-  {from: 0, to: 1},
-  {from: 0, to: 10},
+  {from: 0, to: uiDivisionCounts[0]},
+  {from: 0, to: uiDivisionCounts[1]},
   {from: 0, to:0}
 ];
 
@@ -88,6 +90,10 @@ const Home = () => {
     return new ButtonElement({name: '', value: ''});
   }
 
+  function rescalePx(npx:number) {
+    return 1/vmin*1*npx;
+  }
+
   function makeButton( {
     layer = -1,
     id = -1,
@@ -95,10 +101,14 @@ const Home = () => {
     using = false,
     styleSettings = {},
   }:Partial<makeButtonInterFace> ) {
+    const rescaledBorderWeight = rescalePx(UI_BORDER_WEIGHT) * size;
+    const rescaledFontSize = rescalePx(UI_FONT_SIZE);
+    const rescaledStrokeWeight = rescalePx(UI_STROKE_WEIGHT);
+
     const divisionCount = uiDivisionCounts[layer];
     const rawId = id;
     id = loopIndex(divisionCount, rawId);
-    const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size;
+
     const activation_flag = using ? 1: 0;
 
     const button =
@@ -109,12 +119,16 @@ const Home = () => {
         }
         onClick={()=>uiClicked({ layer:layer, id:id })}
         style={{
-          clipPath: `url(#btn_clip_${layer}_${id})`,
           width: `${100*size*activation_flag}%`,
           height: `${100*size*activation_flag}%`,
           opacity: activation_flag,
           visibility: `${using? 'visible': 'hidden'}`,
-          backgroundImage: `url(#btn_visual_${layer}_${id})`,
+          ...()=> {
+            return using ? {
+              backgroundImage: `url(#btn_visual_${layer}_${id})`,
+              clipPath: `url(#btn_clip_${layer}_${id})`,
+            }:{};
+          },
           ...styleSettings,
         }}
       ></button>;
@@ -138,33 +152,34 @@ const Home = () => {
       }) => getPos(method, index) );
     const mx = ax.plus(bx).raw/2;
     const my = ay.plus(by).raw/2;
-    const cx = minorAdjuster(mx, reScaledBorderWeight, 0.5);
-    const cy = minorAdjuster(my, reScaledBorderWeight, 0.5);
+    const cx = minorAdjuster(mx, rescaledBorderWeight, 0.5);
+    const cy = minorAdjuster(my, rescaledBorderWeight, 0.5);
 
     const svg =
-      <svg xmlns="http://www.w3.org/2000/svg">
+      using ? <svg xmlns="http://www.w3.org/2000/svg">
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
           <path d={`M ${cx.plus(ax)} ${cy.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${cx} ${cy}` : ''} Z`} fill="none"/>
         </clipPath>
-      </svg>;
+      </svg> : '';
 
-    const tx = minorAdjuster(mx, 1-reScaledBorderWeight, 0.5);
-    const ty = minorAdjuster(my, 1-reScaledBorderWeight, 0.5);
+    const tx = minorAdjuster(mx, 1-rescaledBorderWeight, 0.5).div(2).plus(0.5);
+    const ty = minorAdjuster(my, 1-rescaledBorderWeight, 0.5).div(2).plus(0.5);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="-1 -1 1 1"
+        viewBox="0 0 1 1"
         width={`${100*size*activation_flag}%`}
         height={`${100*size*activation_flag}%`}
         id={`btn_visual_${layer}_${id}`}
+        preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size="5em" stroke="black"
-        text-anchor="middle" stroke-width="0.5px"
+        font-size={rescaledFontSize*3} stroke="black"
+        text-anchor="middle" stroke-width={rescaledStrokeWeight}
       >
         {getUiElementFromLayer(layer,rawId).displayName}
       </text>
-    </svg>: <svg id={`btn_visual_${layer}_${id}`}></svg>;
+    </svg>: '';
     return { button, svg, svg2 };
   }
   return (
@@ -256,12 +271,16 @@ class Result extends String {
     this.callback = callback;
   }
 
-  plus(e:Result) {
-    return new Result(this.raw + e.raw,this.callback);
+  plus(e:Result|number) {
+    return new Result(this.raw + (typeof e === 'number' ? e : e.raw), this.callback)
   }
 
-  minus(e:Result) {
-    return new Result(this.raw - e.raw,this.callback);
+  minus(e:Result|number) {
+    return new Result(this.raw - (typeof e === 'number' ? e : e.raw), this.callback)
+  }
+
+  div(e:Result|number) {
+    return new Result(this.raw / (typeof e === 'number' ? e : e.raw), this.callback)
   }
 }
 
