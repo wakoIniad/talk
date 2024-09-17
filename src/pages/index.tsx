@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
 
-const Romanizer = require('js-hira-kata-romanize');
+/*const Romanizer = require('js-hira-kata-romanize');
 const r = new Romanizer({
   chouon: Romanizer.CHOUON_ALPHABET
-});
+});*/
 
 import Hiraganizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
@@ -68,16 +68,18 @@ const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
 function loopIndex( length: number, raw: RawId ):number {
   return (length + raw.parse())%length;
 }
+
+const initialUsingCenterUi:{[key:string]: ButtonElement}= {
+  dakuten: new ButtonElement({name: '', value: ''}),
+  handakuten: new ButtonElement({name: '', value: ''}),
+  small: new ButtonElement({name: '', value: ''}),
+}
+
 const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
-  const [usingCenterUI, setUsingCenterUI] =
-    useState({
-      'dakuten':new ButtonElement({name:'',value:''}),
-      'handakuten': new ButtonElement({name:'',value:''}),
-      'small': new ButtonElement({name:'',value:''}),
-    });
+  const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
 
   /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
   console.log(messageText);*/
@@ -112,8 +114,10 @@ const Home = () => {
 
         if(inputElm.displayName.length > 0) {
           setMssageText(messageText.slice(0,-1)+inputElm.value);
-          const displayName:string = inputElm.displayName;
-          usingCenterUI[`${displayName}`] = new ButtonElement({name: '', value:''});
+          Object.keys(usingCenterUI).forEach(key=> {
+            usingCenterUI[key] = new ButtonElement({name: '', value:''});
+          })
+          setUsingCenterUI({...usingCenterUI});
         }
         return;
       case 1:
@@ -175,6 +179,14 @@ const Home = () => {
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     switch(layer) {
       case 0:
+        const usableOptions:Array<string> = [];
+        ['dakuten','handakuten','small'].forEach(key=> {
+          if(usingCenterUI[key].value.length > 0) {
+            usableOptions.push(key);
+          }
+        });
+        const key = usableOptions[id];
+        if(key) return usingCenterUI[key];
         break;
       case 1:
         return LayerArray[id];
@@ -190,6 +202,11 @@ const Home = () => {
 
   function rescalePx(npx:number) {
     return 1/vmin*1*npx;
+  }
+
+  function getDisplayName(layer,name) {
+    if(layer)return name;
+    return {'dakuten':'濁点','handakuten':'半濁点','small':'小文字'}?.[name] || '';
   }
 
   function makeButton( {
@@ -252,7 +269,7 @@ const Home = () => {
         text-anchor="middle" stroke-width={rescaledStrokeWeight}
         dominant-baseline="middle"
       >
-        {getUiElementFromLayer(layer,rawId).displayName}
+        {getDisplayName(layer,getUiElementFromLayer(layer,rawId).displayName)}
       </text>
     </svg>: '';
 
