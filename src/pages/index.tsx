@@ -36,18 +36,21 @@ const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
     children: new ButtonLayers(...hiraganaList)
   })));
 
-function loopIndex( length: number, n: number ):number {
-  return (length + n)%length;
+function loopIndex( length: number, raw: RawId ):number {
+  return (length + raw.parse())%length;
 }
 const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
+  const [messageText, setMssageText] = useState('');
+  console.log(messageText);
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
-  function uiClicked(args: {id: number, layer: number}) {
-    const {id, layer} = args;
+  function uiClicked(args: {rawId: RawId, layer: number}) {
+    const {rawId, layer} = args;
+    const id = loopIndex(uiDivisionCounts[layer], rawId);
 
     switch(layer) {
       case 0:
@@ -63,6 +66,9 @@ const Home = () => {
         setActiveButtons([...activeButtons]);
         return;
       case 2:
+        const inputElm = getUiElementFromLayer(layer,rawId);
+        console.log(layer,rawId,activeButtons[1]);
+        setMssageText(messageText+inputElm.value)
         return;
     }
   }
@@ -75,15 +81,18 @@ const Home = () => {
     styleSettings?: {[key:string]:any}
   }
 
-  function getUiElementFromLayer(layer: number, rawId: number):ButtonElement {
+  function getUiElementFromLayer(layer: number, rawId: RawId):ButtonElement {
+
+    const id = loopIndex(uiDivisionCounts[layer], rawId);
     switch(layer) {
       case 0:
         break;
       case 1:
-        return LayerArray[rawId];
+        return LayerArray[id];
       case 2:
         const rootId = activeButtons[1];
-        const arcId = rawId - usingUI[2].from;
+        const arcId = rawId.parse() - usingUI[2].from;
+        console.log('arc:'+arcId,rawId.parse(),- usingUI[2].from)
         return LayerArray[rootId].children[arcId];
     }
 
@@ -106,7 +115,7 @@ const Home = () => {
     const rescaledStrokeWeight = rescalePx(UI_STROKE_WEIGHT);
 
     const divisionCount = uiDivisionCounts[layer];
-    const rawId = id;
+    const rawId = new RawId(id);
     id = loopIndex(divisionCount, rawId);
 
     const activation_flag = using ? 1: 0;
@@ -147,7 +156,6 @@ const Home = () => {
 
     const tx = minorAdjuster(mx.raw, 1-rescaledFontSize-0.05, 0.5);
     const ty = minorAdjuster(my.raw, 1-rescaledFontSize-0.05, 0.5);
-    if(layer === 1)console.log(id, tx,ty);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +179,7 @@ const Home = () => {
     ${styles[`input_ui_btn_${layer}_${id}`]}
     ${using ? styles.ExpansionRing : '' }`
     }
-    onClick={()=>uiClicked({ layer:layer, id:id })}
+    onClick={()=>uiClicked({ layer:layer, rawId:rawId })}
     style={{
       width: `${100*size*activation_flag}%`,
       height: `${100*size*activation_flag}%`,
@@ -184,6 +192,9 @@ const Home = () => {
   }
   return (
     <div className={styles.container}>
+      <div id="message_display" className={styles.message_display}>
+        {messageText}
+      </div>
       <div className={styles.input_ui_container}>
         {
           (function(){
@@ -294,5 +305,16 @@ class ResultAsNumber extends Number {
   }
   calc(target: ResultAsNumber, calcFunc: (input: ResultAsNumber) => Number) {
     return new ResultAsNumber(calcFunc(this), this.callback);
+  }
+}
+
+class RawId extends Number {
+  raw: number;
+  constructor(raw:number) {
+    super(raw);
+    this.raw = raw;
+  }
+  parse() {
+    return this.raw;
   }
 }

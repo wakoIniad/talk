@@ -86,5 +86,20 @@
 }
 
 /**
+ * Non-control UI
+*/
+
+.message_display {
+  background-color: rgba(200,200,200,0.8);
+
+  width: 80%;
+  position: absolute;
+  bottom: 1em;
+  font-size: x-large;;
+
+  z-index: 10;
+}
+
+/**
  * post-processing of SCSS
 */
