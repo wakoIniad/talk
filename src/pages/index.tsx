@@ -7,7 +7,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 
 const UI_BORDER_WEIGHT = 40;//px
 
-const uiDivisionCounts = [ 1.001, 10, 30 ];
+const uiDivisionCounts = [ 1.001, 10, 30-5 ];
 
 const usingUiInitial = [
   {from: 0, to: 1},
@@ -72,9 +72,8 @@ const Home = () => {
     const button =
       <button
         className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
-        ${styles[`input_ui_btn_${layer}_${id}
-        ${using ? styles.ExpansionRing : '' }
-        `]}`
+        ${styles[`input_ui_btn_${layer}_${id}`]}
+        ${using ? styles.ExpansionRing : '' }`
         }
         onClick={()=>uiClicked({ layer:layer, id:id })}
         style={{
