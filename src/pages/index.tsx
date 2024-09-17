@@ -152,13 +152,11 @@ const Home = () => {
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1 1"
-        width={`${100*size*activation_flag}%`}
-        height={`${100*size*activation_flag}%`}
         id={`btn_visual_${layer}_${id}`}
         preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size={rescaledFontSize*2} stroke="green" fill="white"
+        font-size={rescaledFontSize*1} stroke="green" fill="white"
         text-anchor="middle" stroke-width={rescaledStrokeWeight}
       >
         {getUiElementFromLayer(layer,rawId).displayName}
@@ -180,8 +178,8 @@ const Home = () => {
       visibility: `${using? 'visible': 'hidden'}`,
       ...styleSettings,
     }}
-  >{svg2}</button>;
-    return { button, svg, svg2:'' };
+  >{}</button>;
+    return { button, svg, svg2 };
   }
   return (
     <div className={styles.container}>
