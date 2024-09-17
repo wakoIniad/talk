@@ -70,35 +70,29 @@ const Home = () => {
     const activation_flag = using ? 1: 0;
 
     const button =
-      <div
-      className={styles.inpur_ui_btn_wrapper}
-      style={{
-        clipPath: `url(#btn_clip_${layer}_${id})`,
-        width: `${100*size*activation_flag}%`,
-        height: `${100*size*activation_flag}%`,
-      }}>
-        <button
-          className={
-            `${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}` +
-            `${styles[`input_ui_btn_${layer}_${id}`]}` +
-            using ? styles.ExpansionRing : ''
-          }
-          onClick={()=>uiClicked({ layer:layer, id:id })}
-          style={{
-            width: `${100*activation_flag}%`,
-            height: `${100*activation_flag}%`,
-            opacity: activation_flag,
-          }}
-      ></button>
-    </div>
-
+      <button
+        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+        ${styles[`input_ui_btn_${layer}_${id}
+        ${using ? styles.ExpansionRing : '' }
+        `]}`
+        }
+        onClick={()=>uiClicked({ layer:layer, id:id })}
+        style={{
+          clipPath: `url(#btn_clip_${layer}_${id})`,
+          width: `${100*size*activation_flag}%`,
+          height: `${100*size*activation_flag}%`,
+          opacity: activation_flag,
+        }}
+      ></button>;
 
     const getPos = (
       f:(rad: number) => number,
       i:number
     ) => minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0);
+
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
+
     const [ ax, ay, bx, by, ] =
       [ { method: Math.cos, index: id },
         { method: Math.sin, index: id },
@@ -110,6 +104,7 @@ const Home = () => {
       }) => getPos(method, index) );
     const mx = minorAdjuster(ax.plus(bx).raw, reScaledBorderWeight/2, 0.5);
     const my = minorAdjuster(ay.plus(by).raw, reScaledBorderWeight/2, 0.5);
+
     const svg =
       <svg xmlns="http://www.w3.org/2000/svg">
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
