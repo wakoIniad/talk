@@ -56,7 +56,7 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
+const UI_RING_WEGIHT_EACH_LAYER = [ 0.25, 0.6, 1 ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -297,8 +297,8 @@ const Home = () => {
 
   function getDisplayName(layer: number,name: string) {
     if(layer)return name;
-    return {'dakuten':'濁点','handakuten':'半濁点','small':'小文字',
-            'space':'空白','delete':'削除',
+    return {'dakuten':'濁','handakuten':'丸','small':'小',
+            'space':'空','delete':'削',
     }?.[name] || '';
   }
 
@@ -348,8 +348,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*1.25, 0.5);
-    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*1.25, 0.5);
+    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*1, 0.5);
+    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*1, 0.5);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
