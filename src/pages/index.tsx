@@ -24,14 +24,14 @@ const pallet2 = [
 
 const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
 
-const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
+const layer = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
     .map(vowel=>Romanizer(consonant+vowel))
     .map(hiragana=>new ButtonElement({name: hiragana, value: hiragana}))
   ).map(hiraganaList=>new ButtonElement({
     name: hiraganaList[0].displayName + "行",
     value: null,
-    children: new ButtonLayers(hiraganaList)
+    children: new ButtonLayers(...hiraganaList)
   })));
 
 function loopIndex( length: number, n: number ) {
@@ -39,6 +39,7 @@ function loopIndex( length: number, n: number ) {
 }
 const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
+  const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
@@ -56,6 +57,8 @@ const Home = () => {
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
         usingUI[2].to = usingUI[2].from+5;
         setUsingUI([...usingUI]);
+        activeButtons[1] = id;
+        setActiveButtons([...activeButtons]);
         return;
       case 2:
         return;
@@ -116,16 +119,31 @@ const Home = () => {
         method: (rad:number)=>number,
         index: number
       }) => getPos(method, index) );
-    const mx = minorAdjuster(ax.plus(bx).raw, reScaledBorderWeight/2, 0.5);
-    const my = minorAdjuster(ay.plus(by).raw, reScaledBorderWeight/2, 0.5);
+    const mx = ax.plus(bx).raw/2;
+    const my = ay.plus(by).raw/2;
+    const cx = minorAdjuster(mx, reScaledBorderWeight, 0.5);
+    const cy = minorAdjuster(my, reScaledBorderWeight, 0.5);
 
     const svg =
       <svg xmlns="http://www.w3.org/2000/svg">
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
-          <path d={`M ${mx.plus(ax)} ${my.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${mx} ${my}` : ''} Z`} fill="none"/>
+          <path d={`M ${cx.plus(ax)} ${cy.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${cx} ${cy}` : ''} Z`} fill="none"/>
         </clipPath>
       </svg>;
-    return { button, svg };
+
+    const tx = minorAdjuster(mx, 1-reScaledBorderWeight, 0.5);
+    const ty = minorAdjuster(my, 1-reScaledBorderWeight, 0.5);
+    const svg2 =
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="-1 -1 1 1"
+        width={`${100*size*activation_flag}%`}
+        height={`${100*size*activation_flag}%`}
+      ><text x={`${tx}`} y={`${ty}`} font-size="5em" stroke="black" text-anchor="middle" stroke-width="0.5px" >
+
+        </text>
+      </svg>;
+    return { button, svg, svg2 };
   }
   return (
     <div className={styles.container}>
@@ -160,7 +178,7 @@ const Home = () => {
                     }
                     break;
                 }
-                const { button, svg } = makeButton(config);
+                const { button, svg, svg2 } = makeButton(config);
                 buttons.push(button);
                 svgs.push(svg);
               }

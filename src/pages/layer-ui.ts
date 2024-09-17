@@ -13,10 +13,11 @@ interface ButtonLayersSetting {
   value: any;
   children?: ButtonLayers;
 }
-export class ButtonLayers {
+export class ButtonLayers extends Array{
   elements: Array<ButtonElement>;
   index: number;
-  constructor(elements: (ButtonElement)[] = []) {
+  constructor(...elements: (ButtonElement)[]) {
+    super(elements.length);
     this.elements = elements;
     this.index = 0;
     this.upDateIndex(elements);
