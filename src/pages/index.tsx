@@ -9,7 +9,7 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 64;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 1.001, 10, 30-5 ];
+const uiDivisionCounts = [ 1.001, 4, 30-5 ];
 
 const usingUiInitial = [
   {from: 0, to: uiDivisionCounts[0]},
@@ -115,21 +115,6 @@ const Home = () => {
       styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
       styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
     }
-    const button =
-      <button
-        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
-        ${styles[`input_ui_btn_${layer}_${id}`]}
-        ${using ? styles.ExpansionRing : '' }`
-        }
-        onClick={()=>uiClicked({ layer:layer, id:id })}
-        style={{
-          width: `${100*size*activation_flag}%`,
-          height: `${100*size*activation_flag}%`,
-          opacity: activation_flag,
-          visibility: `${using? 'visible': 'hidden'}`,
-          ...styleSettings,
-        }}
-      ></button>;
 
     const getPos = (
       f:(rad: number) => number,
@@ -160,8 +145,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, (1-rescaledBorderWeight)/2, 0.5);
-    const ty = minorAdjuster(my.raw, (1-rescaledBorderWeight)/2, 0.5);
+    const tx = minorAdjuster(mx.raw, (1), 0.5);
+    const ty = minorAdjuster(my.raw, (1), 0.5);
     if(layer === 1)console.log(id, tx,ty);
     const svg2 =
       using? <svg
@@ -179,7 +164,24 @@ const Home = () => {
         {getUiElementFromLayer(layer,rawId).displayName}
       </text>
     </svg>: '';
-    return { button, svg, svg2 };
+
+
+  const button =
+  <button
+    className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+    ${styles[`input_ui_btn_${layer}_${id}`]}
+    ${using ? styles.ExpansionRing : '' }`
+    }
+    onClick={()=>uiClicked({ layer:layer, id:id })}
+    style={{
+      width: `${100*size*activation_flag}%`,
+      height: `${100*size*activation_flag}%`,
+      opacity: activation_flag,
+      visibility: `${using? 'visible': 'hidden'}`,
+      ...styleSettings,
+    }}
+  >{svg2}</button>;
+    return { button, svg, svg2:'' };
   }
   return (
     <div className={styles.container}>
