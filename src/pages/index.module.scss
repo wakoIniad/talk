@@ -50,7 +50,7 @@
 
 .input_ui_btn_0 {
 
-  z-index: 5;
+  z-index: 6;
 
   @include drop_shadow_border(30px);
 }
@@ -96,14 +96,18 @@
     rgba(200,200,200,0.1),
     rgba(200,200,200,0.8),
   );
+  text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
 
   width: 80%;
   position: absolute;
   bottom: 1em;
   font-size: x-large;
+  color: rgba(280,280,280);
 
   overflow-wrap: break-word;
   pointer-events: none;
+  //-webkit-text-stroke: .1px white;
+  //text-stroke: .1;
 
   z-index: 10;
 }

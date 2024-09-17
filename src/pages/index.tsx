@@ -24,7 +24,7 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
+const UI_RING_WEGIHT_EACH_LAYER = [ 0.3, 0.7, 0.95 ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -120,11 +120,6 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
-    if(using) {
-      //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
-      styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
-    }
-
     const getPos = (
       f:(rad: number) => number,
       i:number
@@ -173,6 +168,11 @@ const Home = () => {
     </svg>: '';
 
 
+  if(using) {
+    //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
+    styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
+    if(!styleSettings.opacity)styleSettings.opacity = activation_flag;
+  }
   const button =
   <button
     className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
@@ -183,7 +183,6 @@ const Home = () => {
     style={{
       width: `${100*size*activation_flag}%`,
       height: `${100*size*activation_flag}%`,
-      opacity: activation_flag,
       visibility: `${using? 'visible': 'hidden'}`,
       ...styleSettings,
     }}
@@ -224,8 +223,9 @@ const Home = () => {
                   case 2:
                     if(config.using === true) {
                       config.styleSettings = {};
-
+                      config.styleSettings.zIndex = 3//5;
                       const palletIndex = j-using.from;
+                      config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
                       config.styleSettings.backgroundColor = pallet[palletIndex];
                     }
                     break;
