@@ -17,7 +17,7 @@ export class ButtonLayers extends Array{
   public elements: Array<ButtonElement>;
   depth: number;
   constructor(...elements: (ButtonElement)[]) {
-    
+
     super(elements.length);
     this.elements = elements;
     this.depth = 0;

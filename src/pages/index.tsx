@@ -2,17 +2,46 @@ import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
 
-import Romanizer from './romaji-hira-convert';
+const Romanizer = require('js-hira-kata-romanize');
+const r = new Romanizer({
+  chouon: Romanizer.CHOUON_ALPHABET
+});
+
+import Hiraganizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
+
+
+import localfont from "next/font/local";
+
+const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
+
+const HANDAKUTEN_UNICODE:string = "\u{309A}"; //半濁点
+
+const PlemolJPReglar = localfont({
+  src: "./font/PlemolJP_HS/PlemolJPHS-Regular.ttf",
+  weight: '400',
+  variable: "--plemol-jphs-regular",
+ });
+ const PlemolJPBold = localfont({
+  src: "./font/PlemolJP_HS/PlemolJPHS-Bold.ttf",
+  weight: '400',
+  variable: "--plemol-jphs-bold",
+ });
+ const PlemolJPText = localfont({
+  src: "./font/PlemolJP_HS/PlemolJPHS-Text.ttf",
+  weight: '400',
+  variable: "--plemol-jphs-text",
+ });
+
 
 const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 64;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 1.001, 10, 30-5 ];
+const uiDivisionCounts = [ 2, 10, 30-5 ];
 
 const usingUiInitial = [
-  {from: 0, to: uiDivisionCounts[0]},
+  {from: 0, to: 2},
   {from: 0, to: uiDivisionCounts[1]},
   {from: 0, to:0}
 ];
@@ -24,12 +53,12 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEGIHT_EACH_LAYER = [ 0.3, 0.7, 0.95 ];
+const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 0.95 ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
-    .map(vowel=>Romanizer(consonant+vowel))
-    .map(hiragana=>new ButtonElement({name: hiragana, value: hiragana}))
+    .map(vowel=>
+      new ButtonElement({name: Hiraganizer(consonant+vowel), value: consonant+vowel}))
   ).map(hiraganaList=>new ButtonElement({
     name: hiraganaList[0].displayName,
     value: null,
@@ -43,6 +72,8 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
+  const [centerUIFlags, setCenterUIFlags] =
+    useState({dakuten:false, handakuten: false, small: false});
   console.log(messageText);
 
   const { width, height } = getWindowSize();
@@ -51,24 +82,41 @@ const Home = () => {
   function uiClicked(args: {rawId: RawId, layer: number}) {
     const {rawId, layer} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
-
+    console.log('id',id,'layer',layer);
+    const inputElm = getUiElementFromLayer(layer,rawId);
     switch(layer) {
       case 0:
 
         usingUI[2].to = usingUI[2].from;
         setUsingUI([...usingUI]);
+
+        const lastChar = messageText[messageText.length-1];
         return;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
         usingUI[2].to = usingUI[2].from+5;
         setUsingUI([...usingUI]);
         activeButtons[1] = id;
+        activeButtons[2] = -1;
         setActiveButtons([...activeButtons]);
         return;
       case 2:
-        const inputElm = getUiElementFromLayer(layer,rawId);
-        console.log(layer,rawId,activeButtons[1]);
-        setMssageText(messageText+inputElm.value)
+        setMssageText(messageText+inputElm.displayName)
+        activeButtons[2] = id;
+        setActiveButtons([...activeButtons]);
+        const [mother, child] = inputElm.value.split('');
+        if(['k','s','d','h'].includes(mother)) {
+          centerUIFlags.dakuten = true;
+        } else if(['h'].includes(mother)) {
+          centerUIFlags.handakuten = true;
+        } else if(['t','y'].includes(mother)) {
+          if('t' === mother && 'u' === child) {
+            centerUIFlags.small = true;
+          } else if('y' === mother && ['a', 'i', 'o'].includes(child)) {
+            centerUIFlags.small = true;
+          }
+        }
+        setCenterUIFlags({...centerUIFlags});
         return;
     }
   }
@@ -191,23 +239,19 @@ const Home = () => {
   }
   return (
     <div className={styles.container}>
-      <div id="message_display" className={styles.message_display}>
+      <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         {messageText}
       </div>
       <div className={styles.input_ui_container}>
         {
           (function(){
-            const centerBtn = makeButton({layer:0, id:0, size:0.35, using:true});
             const buttons = [
-              centerBtn.button,
             ];
 
             const svgs = [
-              centerBtn.svg,
             ];
 
             const svg2s = [
-              centerBtn.svg2,
             ];
 
             for(let i = 0;i < usingUI.length; i++) {
@@ -220,6 +264,12 @@ const Home = () => {
                   using: (using.from <= j) && (j < using.to)
                 }
                 switch(i) {
+                  case 1:
+                    if(loopIndex(uiDivisionCounts[i], new RawId(j)) === activeButtons[i]) {
+                      config.styleSettings = {};
+                      config.styleSettings.backgroundColor = 'rgba(220,220,220,1)'
+                    }
+                    break;
                   case 2:
                     if(config.using === true) {
                       config.styleSettings = {};
@@ -227,6 +277,10 @@ const Home = () => {
                       const palletIndex = j-using.from;
                       config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
                       config.styleSettings.backgroundColor = pallet[palletIndex];
+                      if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
+                        config.styleSettings.backgroundColor = 'rgba(220,220,220,1)';
+                        config.styleSettings.borderColor = pallet[palletIndex];
+                      }
                     }
                     break;
                 }

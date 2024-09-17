@@ -3,6 +3,12 @@
 */
 @use "sass:math";
 
+@font-face {
+  font-family: "PlemolJP";
+  src:
+    url("/font/PlemolJP_HS/PlemolJPHS-Regular.ttf") format("truetype"),
+}
+
 /**
  * parts styles
 */
@@ -23,6 +29,7 @@
   justify-content: center;
   align-items: center;
 
+  font-family:"UD デジタル 教科書体 N-R", "BIZ UDゴシック Regular", "Hiragino Kaku Gothic ProN", "ascii";
 }
 
 .input_ui_container {
@@ -98,11 +105,13 @@
   );
   text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
 
-  width: 80%;
+  height: 95%;
+  width: 20%;
   position: absolute;
-  bottom: 1em;
+  left: 1em;
   font-size: x-large;
-  color: rgba(280,280,280);
+  font-weight: bold;
+  color: rgb(255, 208, 80);
 
   overflow-wrap: break-word;
   pointer-events: none;
