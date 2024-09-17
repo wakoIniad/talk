@@ -12,7 +12,7 @@ const uiDivisionCounts = [ 1.001, 10, 30 ];
 const usingUiInitial = [
   {from: 0, to: 1},
   {from: 0, to: 10},
-  {from: -1, to:-1}
+  {from: 0, to:0}
 ];
 
 const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
@@ -28,10 +28,8 @@ const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
   })));
 
 function loopIndex( length: number, n: number ) {
-  console.log(length, n ,length+n)
   return (length + n)%length;
 }
-console.log(layer)
 const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
 
@@ -40,19 +38,20 @@ const Home = () => {
 
   function uiClicked(args: {id: number, layer: number}) {
     const {id, layer} = args;
-    console.log(id,layer)
 
     switch(layer) {
       case 0:
-        break;
+
+        usingUI[2].to = usingUI[2].from;
+        setUsingUI([...usingUI]);
+        return;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
-        usingUI[2].to = usingUI[2].from + 5;
-        console.log(usingUI[2],usingUI)
+        usingUI[2].to = usingUI[2].from+5;
         setUsingUI([...usingUI]);
-        break;
+        return;
       case 2:
-        break;
+        return;
     }
   }
 
@@ -63,7 +62,8 @@ const Home = () => {
     using: boolean;
   }
 
-  function makeButton( {layer = -1, id = -1, size = -1, using=true}:Partial<makeButtonInterFace> ) {
+  function makeButton( {layer = -1, id = -1, size = -1, using=false}:Partial<makeButtonInterFace> ) {
+    if(id === 0 && layer == 2)console.log(layer,id,using);
     const divisionCount = uiDivisionCounts[layer];
     id = loopIndex(divisionCount, id);
     const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size;
@@ -82,6 +82,7 @@ const Home = () => {
           width: `${100*size*activation_flag}%`,
           height: `${100*size*activation_flag}%`,
           opacity: activation_flag,
+          visibility: `${using? 'visible': 'hidden'}`
         }}
       ></button>;
 
@@ -130,7 +131,8 @@ const Home = () => {
             for(let i = 0;i < usingUI.length; i++) {
               const using = usingUI[i];
               for(let j = using.from;j < using.from + uiDivisionCounts[i];j++) {
-                const { button, svg } = makeButton({
+                //if((using.from <= j) && (j < using.to)) {
+                  const { button, svg } = makeButton({
                   layer: i,
                   id: j,
                   size: UI_RING_WEGIHT_EACH_LAYER[i],
@@ -138,7 +140,8 @@ const Home = () => {
                 });
                 buttons.push(button);
                 svgs.push(svg);
-              }
+                }
+              //}
             }
 
 
