@@ -38,7 +38,7 @@ const PlemolJPReglar = localfont({
 
 
 const UI_BORDER_WEIGHT = 20;//px
-const UI_FONT_SIZE = 64;//px UI_FONT_SIZE(px) = 1em
+const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
 const uiDivisionCounts = [ 2, 10, 30-5 ];
@@ -56,7 +56,7 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 0.95 ];
+const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -348,8 +348,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize, 0.5);
-    const ty = minorAdjuster(my.raw, 1-rescaledFontSize, 0.5);
+    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*1.25, 0.5);
+    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*1.25, 0.5);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -394,6 +394,10 @@ const Home = () => {
         <span className={`${styles.message_text}`}>
             {messageText}
         </span>
+        <button className={`${styles.line_button}`}>LINEに送る</button>
+      </div>
+      <div className={styles.my_note}>
+        ここに、単語登録機能・単語カード機能・メモ機能などを入れる予定。
       </div>
       <div className={styles.input_ui_container}>
         {
