@@ -5,15 +5,15 @@ import styles from './index.module.scss';
 import Romanizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
 
-const UI_BORDER_WEIGHT = 40;//px
+const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 64;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 1.001, 2, 30-5 ];
+const uiDivisionCounts = [ 1.001, 10, 30-5 ];
 
 const usingUiInitial = [
-  {from: 0, to: 1},
-  {from: 0, to: 3},
+  {from: 0, to: uiDivisionCounts[0]},
+  {from: 0, to: uiDivisionCounts[1]},
   {from: 0, to:0}
 ];
 
