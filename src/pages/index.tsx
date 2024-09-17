@@ -9,7 +9,7 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 64;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 1.001, 4, 30-5 ];
+const uiDivisionCounts = [ 1.001, 10, 30-5 ];
 
 const usingUiInitial = [
   {from: 0, to: uiDivisionCounts[0]},
@@ -31,7 +31,7 @@ const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
     .map(vowel=>Romanizer(consonant+vowel))
     .map(hiragana=>new ButtonElement({name: hiragana, value: hiragana}))
   ).map(hiraganaList=>new ButtonElement({
-    name: hiraganaList[0].displayName + "行",
+    name: hiraganaList[0].displayName,
     value: null,
     children: new ButtonLayers(...hiraganaList)
   })));
