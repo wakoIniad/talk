@@ -139,19 +139,19 @@ const Home = () => {
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
 
-    const [ ax, ay, bx, by, ] =
+    const [ ax, ay, bx, by, mx, my] =
       [ { method: Math.cos, index: id },
         { method: Math.sin, index: id },
         { method: Math.cos, index: id + 1 },
         { method: Math.sin, index: id + 1 },
+        { method: Math.cos, index: id + 0.5 },
+        { method: Math.sin, index: id + 0.5 },
       ].map( ({method, index}: {
         method: (rad:number)=>number,
         index: number
       }) => getPos(method, index) );
-    const mx = ax.plus(bx).raw/2;
-    const my = ay.plus(by).raw/2;
-    const cx = minorAdjuster(mx, rescaledBorderWeight, 0.5);
-    const cy = minorAdjuster(my, rescaledBorderWeight, 0.5);
+    const cx = minorAdjuster(mx.raw, rescaledBorderWeight, 0.5);
+    const cy = minorAdjuster(my.raw, rescaledBorderWeight, 0.5);
 
     const svg =
       using ? <svg xmlns="http://www.w3.org/2000/svg">
@@ -160,8 +160,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx, (1-rescaledBorderWeight)/2, 0.5);
-    const ty = minorAdjuster(my, (1-rescaledBorderWeight)/2, 0.5);
+    const tx = minorAdjuster(mx.raw, (1-rescaledBorderWeight)/2, 0.5);
+    const ty = minorAdjuster(my.raw, (1-rescaledBorderWeight)/2, 0.5);
     if(layer === 1)console.log(id, tx,ty);
     const svg2 =
       using? <svg
