@@ -112,7 +112,7 @@ const Home = () => {
     const activation_flag = using ? 1: 0;
 
     if(using) {
-      styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
+      //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
       styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
     }
 
@@ -145,8 +145,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, (1), 0.5);
-    const ty = minorAdjuster(my.raw, (1), 0.5);
+    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize-0.05, 0.5);
+    const ty = minorAdjuster(my.raw, 1-rescaledFontSize-0.05, 0.5);
     if(layer === 1)console.log(id, tx,ty);
     const svg2 =
       using? <svg
@@ -156,8 +156,9 @@ const Home = () => {
         preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size={rescaledFontSize*1} stroke="green" fill="white"
+        font-size={rescaledFontSize/size*0.75} stroke="green" fill="white"
         text-anchor="middle" stroke-width={rescaledStrokeWeight}
+        dominant-baseline="middle"
       >
         {getUiElementFromLayer(layer,rawId).displayName}
       </text>
@@ -178,8 +179,8 @@ const Home = () => {
       visibility: `${using? 'visible': 'hidden'}`,
       ...styleSettings,
     }}
-  >{}</button>;
-    return { button, svg, svg2 };
+  >{svg2}</button>;
+    return { button, svg, svg2:'' };
   }
   return (
     <div className={styles.container}>
