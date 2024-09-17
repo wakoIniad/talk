@@ -126,6 +126,7 @@ const Home = () => {
 
         usingUI[2].to = usingUI[2].from;
         setUsingUI([...usingUI]);
+        let enableDelete = false;
 
         if(inputElm.displayName.length > 0) {
           const deleted = messageText.slice(-1);
@@ -145,10 +146,11 @@ const Home = () => {
                 exclude:
                   deleted === DAKUTEN_UNICODE ? ['dakuten']:
                   deleted === HANDAKUTEN_UNICODE ?  ['handakuten']
-                :[],
+                :['dakuten','handakuten','small'],
               }
             );
-            console.log(optCheckResult);
+            if(optCheckResult) enableDelete = true;
+            console.log(enableDelete);
           }
         }
         if(optCheckResult) {/**optを優先の為space&del無効化 */
@@ -162,6 +164,10 @@ const Home = () => {
             name: 'space',
             value: updateText.slice(-1)+'_'
           });
+          usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+        }
+
+        if(enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
         break;
@@ -207,12 +213,13 @@ const Home = () => {
     romaji:string,
     hiragana:string,
     options?:{
-      exclude?:Array<string>=[]
+      exclude?:Array<string>,
     }
   ) {
+    const exclude = options?.exclude || [];
     const [ consonant, vowel ] = romaji.split('');
     let optionIsAvaliable = false;
-    if(['k','s','d','h'].includes(consonant)) {
+    if(['k','s','d','h'].includes(consonant) && !exclude.includes('dakuten')) {
       const display = [hiragana, DAKUTEN_UNICODE].join("");
       usingCenterUI.dakuten = new ButtonElement({
         name: 'dakuten',
@@ -220,7 +227,7 @@ const Home = () => {
       });
       optionIsAvaliable = true;
     }
-    if(['h'].includes(consonant)) {
+    if(['h'].includes(consonant) && !exclude.includes('handakuten')) {
       const display =  [hiragana, HANDAKUTEN_UNICODE].join("");
       usingCenterUI.handakuten = new ButtonElement({
         name: 'handakuten',
@@ -228,7 +235,7 @@ const Home = () => {
       });
       optionIsAvaliable = true;
     }
-    if(['t','y'].includes(consonant)) {
+    if(['t','y'].includes(consonant) && !exclude.includes('small')) {
       let flag = false;
       if('t' === consonant && 'u' === vowel) {
         flag = true;
