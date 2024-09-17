@@ -90,12 +90,20 @@
 */
 
 .message_display {
-  background-color: rgba(200,200,200,0.8);
+  //background-color: rgba(200,200,200,0.8);
+  background: linear-gradient(to right,
+    rgba(200,200,200,0.8),
+    rgba(200,200,200,0.1),
+    rgba(200,200,200,0.8),
+  );
 
   width: 80%;
   position: absolute;
   bottom: 1em;
-  font-size: x-large;;
+  font-size: x-large;
+
+  overflow-wrap: break-word;
+  pointer-events: none;
 
   z-index: 10;
 }
