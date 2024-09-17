@@ -12,6 +12,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 
 
 import localfont from "next/font/local";
+import { exitCode } from 'process';
 
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
@@ -127,21 +128,28 @@ const Home = () => {
         setUsingUI([...usingUI]);
 
         if(inputElm.displayName.length > 0) {
+          const deleted = messageText.slice(-1);
           updateText = messageText.slice(0,-1)+inputElm.value;
 
           Object.keys(usingCenterUI).forEach(key=> {
             usingCenterUI[key] = new ButtonElement({name: '', value:''});
           });
-        }
 
-        if(inputElm.displayName === 'delete') {
-          const hiragana = updateText.slice(-1);
-          console.log(hiragana,r.romanize(hiragana).toLowerCase());
-          optCheckResult = optionableChecker({
-            romaji: r.romanize(hiragana).toLowerCase(),
-            hiragana: hiragana,
-          });
-          console.log(optCheckResult);
+          if(inputElm.displayName === 'delete') {
+            const hiragana = updateText.slice(-1);
+            console.log(hiragana,r.romanize(hiragana).toLowerCase());
+            optCheckResult = optionableChecker(
+              r.romanize(hiragana).toLowerCase(),
+              hiragana,
+              {
+                exclude:
+                  deleted === DAKUTEN_UNICODE ? ['dakuten']:
+                  deleted === HANDAKUTEN_UNICODE ?  ['handakuten']
+                :[],
+              }
+            );
+            console.log(optCheckResult);
+          }
         }
         if(optCheckResult) {/**optを優先の為space&del無効化 */
           usingCenterUI.space = new ButtonElement({
@@ -171,10 +179,10 @@ const Home = () => {
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
-        optCheckResult = optionableChecker({
-          romaji: inputElm.value,
-          hiragana: inputElm.displayName,
-        });
+        optCheckResult = optionableChecker(
+          inputElm.value,
+          inputElm.displayName,
+        );
 
         if(optCheckResult) {/**optを優先の為space&del無効化 */
           usingCenterUI.space = new ButtonElement({
@@ -195,7 +203,13 @@ const Home = () => {
     setMssageText(updateText);
   }
 
-  function optionableChecker({romaji= '', hiragana=''}) {
+  function optionableChecker(
+    romaji:string,
+    hiragana:string,
+    options?:{
+      exclude?:Array<string>=[]
+    }
+  ) {
     const [ consonant, vowel ] = romaji.split('');
     let optionIsAvaliable = false;
     if(['k','s','d','h'].includes(consonant)) {
