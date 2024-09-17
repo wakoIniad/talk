@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 import styles from './index.module.scss';
 
-/*const Romanizer = require('js-hira-kata-romanize');
+const Romanizer = require('js-hira-kata-romanize');
 const r = new Romanizer({
   chouon: Romanizer.CHOUON_ALPHABET
-});*/
+});
 
 import Hiraganizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
@@ -111,6 +111,7 @@ const Home = () => {
     });
 
   }
+  let optCheckResult:boolean = false;
   function uiClicked(args: {rawId: RawId, layer: number}) {
     const {rawId, layer} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
@@ -132,12 +133,29 @@ const Home = () => {
             usingCenterUI[key] = new ButtonElement({name: '', value:''});
           });
         }
-        usingCenterUI.space = new ButtonElement({
-          name: 'space',
-          value: updateText.slice(-1)+'_'
-        });
-        usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
-        setUsingCenterUI({...usingCenterUI});
+
+        if(inputElm.displayName === 'delete') {
+          const hiragana = updateText.slice(-1);
+          console.log(hiragana,r.romanize(hiragana).toLowerCase());
+          optCheckResult = optionableChecker({
+            romaji: r.romanize(hiragana).toLowerCase(),
+            hiragana: hiragana,
+          });
+          console.log(optCheckResult);
+        }
+        if(optCheckResult) {/**optを優先の為space&del無効化 */
+          usingCenterUI.space = new ButtonElement({
+            name: '',
+            value: ''
+          });
+          usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+        } else {
+          usingCenterUI.space = new ButtonElement({
+            name: 'space',
+            value: updateText.slice(-1)+'_'
+          });
+          usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+        }
         break;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
@@ -152,42 +170,13 @@ const Home = () => {
 
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
-        const [ consonant, vowel ] = inputElm.value.split('');
-        let optionIsAvaliable = false;
-        if(['k','s','d','h'].includes(consonant)) {
-          const display = [inputElm.displayName, DAKUTEN_UNICODE].join("");
-          usingCenterUI.dakuten = new ButtonElement({
-            name: 'dakuten',
-            value: display,
-          });
-          optionIsAvaliable = true;
-        }
-        if(['h'].includes(consonant)) {
-          const display =  [inputElm.displayName, HANDAKUTEN_UNICODE].join("");
-          usingCenterUI.handakuten = new ButtonElement({
-            name: 'handakuten',
-            value: display,
-          });
-          optionIsAvaliable = true;
-        }
-        if(['t','y'].includes(consonant)) {
-          let flag = false;
-          if('t' === consonant && 'u' === vowel) {
-            flag = true;
-          }
-          if('y' === consonant && ['a', 'u', 'o'].includes(vowel)) {
-            flag = true;
-          }
-          if(flag) {
-            const value = 'l'+inputElm.value;
-            usingCenterUI.small = new ButtonElement({
-              name: 'small',
-              value: Hiraganizer(value),
-            });
-          }
-          optionIsAvaliable = true;
-        }
-        if(optionIsAvaliable) {/**無効化 */
+
+        optCheckResult = optionableChecker({
+          romaji: inputElm.value,
+          hiragana: inputElm.displayName,
+        });
+
+        if(optCheckResult) {/**optを優先の為space&del無効化 */
           usingCenterUI.space = new ButtonElement({
             name: '',
             value: ''
@@ -200,12 +189,51 @@ const Home = () => {
           });
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
-
-        setUsingCenterUI({...usingCenterUI});
         break;
     }
 
     setMssageText(updateText);
+  }
+
+  function optionableChecker({romaji= '', hiragana=''}) {
+    const [ consonant, vowel ] = romaji.split('');
+    let optionIsAvaliable = false;
+    if(['k','s','d','h'].includes(consonant)) {
+      const display = [hiragana, DAKUTEN_UNICODE].join("");
+      usingCenterUI.dakuten = new ButtonElement({
+        name: 'dakuten',
+        value: display,
+      });
+      optionIsAvaliable = true;
+    }
+    if(['h'].includes(consonant)) {
+      const display =  [hiragana, HANDAKUTEN_UNICODE].join("");
+      usingCenterUI.handakuten = new ButtonElement({
+        name: 'handakuten',
+        value: display,
+      });
+      optionIsAvaliable = true;
+    }
+    if(['t','y'].includes(consonant)) {
+      let flag = false;
+      if('t' === consonant && 'u' === vowel) {
+        flag = true;
+      }
+      if('y' === consonant && ['a', 'u', 'o'].includes(vowel)) {
+        flag = true;
+      }
+      if(flag) {
+        const value = 'l'+romaji;
+        usingCenterUI.small = new ButtonElement({
+          name: 'small',
+          value: Hiraganizer(value),
+        });
+      }
+      optionIsAvaliable = true;
+    }
+
+    setUsingCenterUI({...usingCenterUI});
+    return optionIsAvaliable;
   }
 
   interface makeButtonInterFace {
