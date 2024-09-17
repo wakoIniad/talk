@@ -132,25 +132,31 @@ const Home = () => {
         setMssageText(messageText+inputElm.displayName)
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
-        const [vowel, consonant] = inputElm.value.split('');
+        const [ consonant, vowel ] = inputElm.value.split('');
+        console.log(`vowel:${vowel}, consonant:${consonant}`)
         if(['k','s','d','h'].includes(consonant)) {
+          console.log("dakuten")
           const display = [inputElm.displayName, DAKUTEN_UNICODE].join("");
           usingCenterUI.dakuten = new ButtonElement({
             name: 'dakuten',
             value: display,
           });
-        } else if(['h'].includes(consonant)) {
+        }
+        if(['h'].includes(consonant)) {
+          console.log("handakuten")
           const display =  [inputElm.displayName, HANDAKUTEN_UNICODE].join("");
           usingCenterUI.handakuten = new ButtonElement({
             name: 'handakuten',
             value: display,
           });
-        } else if(['t','y'].includes(consonant)) {
+        }
+        if(['t','y'].includes(consonant)) {
+          console.log("tittyai")
           let flag = false;
           if('t' === consonant && 'u' === vowel) {
             flag = true;
           }
-          if('y' === consonant && ['a', 'i', 'o'].includes(vowel)) {
+          if('y' === consonant && ['a', 'u', 'o'].includes(vowel)) {
             flag = true;
           }
           if(flag) {

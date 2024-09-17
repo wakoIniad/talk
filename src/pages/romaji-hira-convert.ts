@@ -1,4 +1,4 @@
-/*import romaji_hira from './romaji-hira-table'
+import romaji_hira from './romaji-hira-table'
 
 export default (input: string) => {
 	let result = ''  // 変換結果の出力文字列
@@ -67,4 +67,3 @@ export default (input: string) => {
 	}
 	return result + pending
 }
-*/
