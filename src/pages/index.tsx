@@ -72,13 +72,33 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
-  const [centerUIFlags, setCenterUIFlags] =
-    useState({dakuten:false, handakuten: false, small: false});
-  console.log(messageText);
+  const [usingCenterUI, setUsingCenterUI] =
+    useState({
+      'dakuten':new ButtonElement({name:'',value:''}),
+      'handakuten': new ButtonElement({name:'',value:''}),
+      'small': new ButtonElement({name:'',value:''}),
+    });
+
+  /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
+  console.log(messageText);*/
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
+  function makeUsinUIElement(consonant:string, Vowel:string, displayName?: string) {
+    const hiraganaList = Vowel.split('')
+    .map(vowel=> new ButtonElement({
+      name: Hiraganizer(consonant+vowel),
+      value: consonant+vowel
+    }));
+
+    return new ButtonElement({
+      name: displayName? displayName : hiraganaList[0].displayName,
+      value: null,
+      children: new ButtonLayers(...hiraganaList)
+    });
+
+  }
   function uiClicked(args: {rawId: RawId, layer: number}) {
     const {rawId, layer} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
@@ -90,7 +110,11 @@ const Home = () => {
         usingUI[2].to = usingUI[2].from;
         setUsingUI([...usingUI]);
 
-        const lastChar = messageText[messageText.length-1];
+        if(inputElm.displayName.length > 0) {
+          setMssageText(messageText.slice(0,-1)+inputElm.value);
+          const displayName:string = inputElm.displayName;
+          usingCenterUI[`${displayName}`] = new ButtonElement({name: '', value:''});
+        }
         return;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
@@ -104,19 +128,36 @@ const Home = () => {
         setMssageText(messageText+inputElm.displayName)
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
-        const [mother, child] = inputElm.value.split('');
-        if(['k','s','d','h'].includes(mother)) {
-          centerUIFlags.dakuten = true;
-        } else if(['h'].includes(mother)) {
-          centerUIFlags.handakuten = true;
-        } else if(['t','y'].includes(mother)) {
-          if('t' === mother && 'u' === child) {
-            centerUIFlags.small = true;
-          } else if('y' === mother && ['a', 'i', 'o'].includes(child)) {
-            centerUIFlags.small = true;
+        const [vowel, consonant] = inputElm.value.split('');
+        if(['k','s','d','h'].includes(consonant)) {
+          const display = [inputElm.displayName, DAKUTEN_UNICODE].join("");
+          usingCenterUI.dakuten = new ButtonElement({
+            name: 'dakuten',
+            value: display,
+          });
+        } else if(['h'].includes(consonant)) {
+          const display =  [inputElm.displayName, HANDAKUTEN_UNICODE].join("");
+          usingCenterUI.handakuten = new ButtonElement({
+            name: 'handakuten',
+            value: display,
+          });
+        } else if(['t','y'].includes(consonant)) {
+          let flag = false;
+          if('t' === consonant && 'u' === vowel) {
+            flag = true;
+          }
+          if('y' === consonant && ['a', 'i', 'o'].includes(vowel)) {
+            flag = true;
+          }
+          if(flag) {
+            const value = 'l'+inputElm.value;
+            usingCenterUI.small = new ButtonElement({
+              name: 'small',
+              value: Hiraganizer(value),
+            });
           }
         }
-        setCenterUIFlags({...centerUIFlags});
+        setUsingCenterUI({...usingCenterUI});
         return;
     }
   }

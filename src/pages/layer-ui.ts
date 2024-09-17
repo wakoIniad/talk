@@ -34,4 +34,9 @@ export class ButtonLayers extends Array{
       }
     }
   }
+
+  append(...elements: Array<ButtonElement>) {
+    this.push(...elements);
+    this.elements.push(...elements);
+  }
 }
