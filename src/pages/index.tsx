@@ -5,22 +5,17 @@ import styles from './index.module.scss';
 import Romanizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'
 
-const UI_BORDER_WEIGHT = 20;//px
+const UI_BORDER_WEIGHT = 40;//px
 
-const UI_DIVISION_COUNT_EACH_LAYER = [ 1.001, 10, 20 ];
-const USING_UI_COUNT_EACH_LAYER = [
+const uiDivisionCounts = [ 1.001, 10, 30 ];
+
+const usingUiInitial = [
   {from: 0, to: 1},
   {from: 0, to: 10},
-  {from: 0, to:20}
+  {from: -1, to:-1}
 ];
 
 const UI_RING_WEGIHT_EACH_LAYER = [ 0.35, 0.7, 1 ];
-
-
-function uiClicked(args: {id: number, layer: number}) {
-  const {id, layer} = args;
-  console.log(id,layer)
-}
 
 const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -33,12 +28,32 @@ const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
   })));
 console.log(layer)
 const Home = () => {
+  const [usingUI, setUsingUI] = useState(usingUiInitial);
+
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
+  function uiClicked(args: {id: number, layer: number}) {
+    const {id, layer} = args;
+    console.log(id,layer)
+
+    switch(layer) {
+      case 0:
+        break;
+      case 1:
+        usingUI[2].from = (uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1;
+        usingUI[2].to = usingUI[2].from + 5;
+        console.log(usingUI[2],usingUI)
+        setUsingUI([...usingUI]);
+        break;
+      case 2:
+        break;
+    }
+  }
+
   function makeButton( layer:number, i:number, size:number ) {
     const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size
-    const DIVISION_COUNT = UI_DIVISION_COUNT_EACH_LAYER[layer];
+    const divisionCount = uiDivisionCounts[layer];
     const button =
       <button
         className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]} ${styles[`input_ui_btn_${layer}_${i}`]}`}
@@ -53,7 +68,7 @@ const Home = () => {
       const getPos = (
         f:(rad: number) => number,
         i:number
-      ) => minorAdjuster(f(2*Math.PI/DIVISION_COUNT*i), 0.5, 0);
+      ) => minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0);
 
       const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
         new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
@@ -73,7 +88,7 @@ const Home = () => {
       const svg =
         <svg xmlns="http://www.w3.org/2000/svg">
           <clipPath id={`btn_clip_${layer}_${i}`} clipPathUnits="objectBoundingBox">
-            <path d={`M ${mx.plus(ax)} ${my.plus(ay)} a 0.5 0.5 0 ${DIVISION_COUNT >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${DIVISION_COUNT >= 2 ? `L ${mx} ${my}` : ''} Z`} fill="none"/>
+            <path d={`M ${mx.plus(ax)} ${my.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${mx} ${my}` : ''} Z`} fill="none"/>
           </clipPath>
         </svg>;
       return { button, svg };
@@ -92,10 +107,14 @@ const Home = () => {
               centerBtn.svg,
             ];
 
-            for(let i = 0;i < USING_UI_COUNT_EACH_LAYER.length; i++) {
-              const USING_UI = USING_UI_COUNT_EACH_LAYER[i];
-              for(let j = USING_UI.from;j < USING_UI.to;j++) {
-                const { button, svg } = makeButton(i, j, UI_RING_WEGIHT_EACH_LAYER[i]);
+            for(let i = 0;i < usingUI.length; i++) {
+              const using = usingUI[i];
+              for(let j = using.from;j < using.to;j++) {
+                const { button, svg } = makeButton({
+                  layer: i,
+                  id: j,
+                  size: UI_RING_WEGIHT_EACH_LAYER[i],
+                  using: using.from <= j && j < using.to);
                 buttons.push(button);
                 svgs.push(svg);
               }
