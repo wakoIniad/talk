@@ -17,6 +17,8 @@ const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
 const HANDAKUTEN_UNICODE:string = "\u{309A}"; //半濁点
 
+const SEPARATOR:string = '‎'; //0幅空白
+
 const PlemolJPReglar = localfont({
   src: "./font/PlemolJP_HS/PlemolJPHS-Regular.ttf",
   weight: '400',
@@ -73,6 +75,14 @@ const initialUsingCenterUi:{[key:string]: ButtonElement}= {
   dakuten: new ButtonElement({name: '', value: ''}),
   handakuten: new ButtonElement({name: '', value: ''}),
   small: new ButtonElement({name: '', value: ''}),
+
+  space: new ButtonElement({name: 'space', value: '_'}),
+  delete: new ButtonElement({name: 'delete', value: ''}),
+}
+
+function LineTextParser(text:string) {
+  text = text.replace('_',' ');
+  return text;
 }
 
 const Home = () => {
@@ -80,7 +90,7 @@ const Home = () => {
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
-
+  console.log(LineTextParser(messageText));
   /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
   console.log(messageText);*/
 
@@ -106,6 +116,9 @@ const Home = () => {
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     console.log('id',id,'layer',layer);
     const inputElm = getUiElementFromLayer(layer,rawId);
+
+    let updateText:string = messageText;
+
     switch(layer) {
       case 0:
 
@@ -113,13 +126,19 @@ const Home = () => {
         setUsingUI([...usingUI]);
 
         if(inputElm.displayName.length > 0) {
-          setMssageText(messageText.slice(0,-1)+inputElm.value);
+          updateText = messageText.slice(0,-1)+inputElm.value;
+
           Object.keys(usingCenterUI).forEach(key=> {
             usingCenterUI[key] = new ButtonElement({name: '', value:''});
-          })
-          setUsingCenterUI({...usingCenterUI});
+          });
         }
-        return;
+        usingCenterUI.space = new ButtonElement({
+          name: 'space',
+          value: updateText.slice(-1)+'_'
+        });
+        usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+        setUsingCenterUI({...usingCenterUI});
+        break;
       case 1:
         usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
         usingUI[2].to = usingUI[2].from+5;
@@ -127,31 +146,31 @@ const Home = () => {
         activeButtons[1] = id;
         activeButtons[2] = -1;
         setActiveButtons([...activeButtons]);
-        return;
+        break;
       case 2:
-        setMssageText(messageText+inputElm.displayName)
+        updateText = messageText+inputElm.displayName;
+
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
         const [ consonant, vowel ] = inputElm.value.split('');
-        console.log(`vowel:${vowel}, consonant:${consonant}`)
+        let optionIsAvaliable = false;
         if(['k','s','d','h'].includes(consonant)) {
-          console.log("dakuten")
           const display = [inputElm.displayName, DAKUTEN_UNICODE].join("");
           usingCenterUI.dakuten = new ButtonElement({
             name: 'dakuten',
             value: display,
           });
+          optionIsAvaliable = true;
         }
         if(['h'].includes(consonant)) {
-          console.log("handakuten")
           const display =  [inputElm.displayName, HANDAKUTEN_UNICODE].join("");
           usingCenterUI.handakuten = new ButtonElement({
             name: 'handakuten',
             value: display,
           });
+          optionIsAvaliable = true;
         }
         if(['t','y'].includes(consonant)) {
-          console.log("tittyai")
           let flag = false;
           if('t' === consonant && 'u' === vowel) {
             flag = true;
@@ -166,10 +185,27 @@ const Home = () => {
               value: Hiraganizer(value),
             });
           }
+          optionIsAvaliable = true;
         }
+        if(optionIsAvaliable) {/**無効化 */
+          usingCenterUI.space = new ButtonElement({
+            name: '',
+            value: ''
+          });
+          usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+        } else {
+          usingCenterUI.space = new ButtonElement({
+            name: 'space',
+            value: updateText.slice(-1)+'_'
+          });
+          usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+        }
+
         setUsingCenterUI({...usingCenterUI});
-        return;
+        break;
     }
+
+    setMssageText(updateText);
   }
 
   interface makeButtonInterFace {
@@ -186,8 +222,8 @@ const Home = () => {
     switch(layer) {
       case 0:
         const usableOptions:Array<string> = [];
-        ['dakuten','handakuten','small'].forEach(key=> {
-          if(usingCenterUI[key].value.length > 0) {
+        ['dakuten','handakuten','small','space','delete',].forEach(key=> {
+          if(usingCenterUI[key].displayName.length > 0) {
             usableOptions.push(key);
           }
         });
@@ -199,7 +235,6 @@ const Home = () => {
       case 2:
         const rootId = activeButtons[1];
         const arcId = rawId.parse() - usingUI[2].from;
-        console.log('arc:'+arcId,rawId.parse(),- usingUI[2].from)
         return LayerArray[rootId].children[arcId];
     }
 
@@ -210,9 +245,11 @@ const Home = () => {
     return 1/vmin*1*npx;
   }
 
-  function getDisplayName(layer,name) {
+  function getDisplayName(layer: number,name: string) {
     if(layer)return name;
-    return {'dakuten':'濁点','handakuten':'半濁点','small':'小文字'}?.[name] || '';
+    return {'dakuten':'濁点','handakuten':'半濁点','small':'小文字',
+            'space':'空白','delete':'削除',
+    }?.[name] || '';
   }
 
   function makeButton( {
@@ -223,7 +260,7 @@ const Home = () => {
     styleSettings = {},
   }:Partial<makeButtonInterFace> ) {
     const rescaledBorderWeight = rescalePx(UI_BORDER_WEIGHT) * size;
-    const rescaledFontSize = rescalePx(UI_FONT_SIZE);
+    const rescaledFontSize = rescalePx(UI_FONT_SIZE) / size;
     const rescaledStrokeWeight = rescalePx(UI_STROKE_WEIGHT);
 
     const divisionCount = uiDivisionCounts[layer];
@@ -261,8 +298,8 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize-0.05, 0.5);
-    const ty = minorAdjuster(my.raw, 1-rescaledFontSize-0.05, 0.5);
+    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize, 0.5);
+    const ty = minorAdjuster(my.raw, 1-rescaledFontSize, 0.5);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -271,7 +308,7 @@ const Home = () => {
         preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size={rescaledFontSize/size*0.75} stroke="green" fill="white"
+        font-size={rescaledFontSize*0.75} stroke="green" fill="white"
         text-anchor="middle" stroke-width={rescaledStrokeWeight}
         dominant-baseline="middle"
       >
