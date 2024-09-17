@@ -26,6 +26,11 @@ const layer = new ButtonLayers(['', ...'kstnhmyrw'.split('')]
     value: null,
     children: new ButtonLayers(hiraganaList)
   })));
+
+function loopIndex( length: number, n: number ) {
+  console.log(length, n ,length+n)
+  return (length + n)%length;
+}
 console.log(layer)
 const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
@@ -41,7 +46,7 @@ const Home = () => {
       case 0:
         break;
       case 1:
-        usingUI[2].from = (uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1;
+        usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
         usingUI[2].to = usingUI[2].from + 5;
         console.log(usingUI[2],usingUI)
         setUsingUI([...usingUI]);
@@ -51,17 +56,28 @@ const Home = () => {
     }
   }
 
-  function makeButton( layer:number, i:number, size:number ) {
-    const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size
+  interface makeButtonInterFace {
+    layer: number;
+    id: number;
+    size: number;
+    using: boolean;
+  }
+
+  function makeButton( {layer = -1, id = -1, size = -1, using=true}:Partial<makeButtonInterFace> ) {
     const divisionCount = uiDivisionCounts[layer];
+    id = loopIndex(divisionCount, id);
+    const reScaledBorderWeight = 1/vmin*1*UI_BORDER_WEIGHT * size;
+    const activation_flag = using ? 1: 0;
+
     const button =
       <button
-        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]} ${styles[`input_ui_btn_${layer}_${i}`]}`}
-        onClick={()=>uiClicked({ layer:layer, id:i })}
+        className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]} ${styles[`input_ui_btn_${layer}_${id}`]}`}
+        onClick={()=>uiClicked({ layer:layer, id:id })}
         style={{
-          clipPath: `url(#btn_clip_${layer}_${i})`,
-          width: `${100*size}%`,
-          height: `${100*size}%`
+          clipPath: `url(#btn_clip_${layer}_${id})`,
+          width: `${100*size*activation_flag}%`,
+          height: `${100*size*activation_flag}%`,
+          opacity: activation_flag,
         }}
       ></button>;
 
@@ -74,10 +90,10 @@ const Home = () => {
         new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
 
       const [ ax, ay, bx, by, ] =
-        [ { method: Math.cos, index: i },
-          { method: Math.sin, index: i },
-          { method: Math.cos, index: i + 1 },
-          { method: Math.sin, index: i + 1 },
+        [ { method: Math.cos, index: id },
+          { method: Math.sin, index: id },
+          { method: Math.cos, index: id + 1 },
+          { method: Math.sin, index: id + 1 },
         ].map( ({method, index}: {
           method: (rad:number)=>number,
           index: number
@@ -87,7 +103,7 @@ const Home = () => {
 
       const svg =
         <svg xmlns="http://www.w3.org/2000/svg">
-          <clipPath id={`btn_clip_${layer}_${i}`} clipPathUnits="objectBoundingBox">
+          <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
             <path d={`M ${mx.plus(ax)} ${my.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${mx} ${my}` : ''} Z`} fill="none"/>
           </clipPath>
         </svg>;
@@ -98,7 +114,7 @@ const Home = () => {
       <div className={styles.input_ui_container}>
         {
           (function(){
-            const centerBtn = makeButton(0, 0, 0.35);
+            const centerBtn = makeButton({layer:0, id:0, size:0.35, using:true});
             const buttons = [
               centerBtn.button,
             ];
@@ -109,12 +125,13 @@ const Home = () => {
 
             for(let i = 0;i < usingUI.length; i++) {
               const using = usingUI[i];
-              for(let j = using.from;j < using.to;j++) {
+              for(let j = using.from;j < using.from + uiDivisionCounts[i];j++) {
                 const { button, svg } = makeButton({
                   layer: i,
                   id: j,
                   size: UI_RING_WEGIHT_EACH_LAYER[i],
-                  using: using.from <= j && j < using.to);
+                  using: (using.from <= j) && (j < using.to)
+                });
                 buttons.push(button);
                 svgs.push(svg);
               }
