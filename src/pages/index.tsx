@@ -519,6 +519,7 @@ class ResultAsNumber extends Number {
   }
 }
 
+//rawIdとIdと混同ミスを防ぐため！！！
 class RawId extends Number {
   raw: number;
   constructor(raw:number) {
