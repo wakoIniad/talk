@@ -85,7 +85,7 @@ const initialUsingCenterUi:{[key:string]: ButtonElement}= {
 }
 
 function LineTextParser(text:string) {
-  text = text.replace('_',' ');
+  text = text.replaceAll('_',' ');
   return text;
 }
 
@@ -122,11 +122,11 @@ const Home = () => {
         'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN
       },
       'payload' : {
-        'message': message
+        'message': LineTextParser(message)
       }
     };
     const res = await fetch('https://notify-api.line.me/api/notify', config);
-    
+
   }
 
   let optCheckResult:boolean = false;
