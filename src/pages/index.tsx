@@ -41,6 +41,9 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
+/**重要:localhostで使わない場合は消す！！ */
+const LINE_ACCESS_TOKEN = '当分gitHubに送るから、自分で書いて！';
+
 const uiDivisionCounts = [ 2, 10, 30-5 ];
 
 const usingUiInitial = [
@@ -110,8 +113,22 @@ const Home = () => {
       value: null,
       children: new ButtonLayers(...hiraganaList)
     });
-
   }
+
+  async function sendToLine(message: string) {
+    const config = {
+      'method' : 'post',
+      'headers': {
+        'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN
+      },
+      'payload' : {
+        'message': message
+      }
+    };
+    const res = await fetch('https://notify-api.line.me/api/notify', config);
+    
+  }
+
   let optCheckResult:boolean = false;
   function uiClicked(args: {rawId: RawId, layer: number}) {
     const {rawId, layer} = args;
@@ -394,7 +411,7 @@ const Home = () => {
         <span className={`${styles.message_text}`}>
             {messageText}
         </span>
-        <button className={`${styles.line_button}`}>LINEに送る</button>
+        <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
       </div>
       <div className={styles.my_note}>
         ここに、単語登録機能・単語カード機能・メモ機能などを入れる予定。
