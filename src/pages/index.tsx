@@ -41,9 +41,6 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-/**重要:localhostで使わない場合は消す！！ */
-const LINE_ACCESS_TOKEN = '';
-
 const uiDivisionCounts = [ 2, 10, 30-5 ];
 
 const usingUiInitial = [
@@ -59,7 +56,7 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEGIHT_EACH_LAYER = [ 0.25, 0.6, 1 ];
+const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.6,1] ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -119,16 +116,6 @@ const Home = () => {
 
   async function sendToLine(message: string) {
     console.log("送信中...")
-    /*const config = {
-      'method' : 'post',
-      'headers': {
-        'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN
-      },
-      'payload' : {
-        'message': LineTextParser(message)
-      }
-    };
-    const res = await fetch('https://notify-api.line.me/api/notify', config);*/
 
     const config = {
       'method' : 'post',
@@ -365,8 +352,8 @@ const Home = () => {
     using = false,
     styleSettings = {},
   }:Partial<makeButtonInterFace> ) {
-    const rescaledBorderWeight = rescalePx(UI_BORDER_WEIGHT) * size;
-    const rescaledFontSize = rescalePx(UI_FONT_SIZE) / size;
+    const rescaledBorderWeight = rescalePx(UI_BORDER_WEIGHT) * size;//SVG上の値
+    const rescaledFontSize = rescalePx(UI_FONT_SIZE) / size;//HTML上の値
     const rescaledStrokeWeight = rescalePx(UI_STROKE_WEIGHT);
 
     const divisionCount = uiDivisionCounts[layer];
@@ -375,32 +362,55 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
+    /*const obj:{[key: any]:number} = {a:1,b:2};
+    const key:keyof typeof obj = "a" as keyof typeof obj;
+    obj[key]*/
+
+/*    const obj:{[key: any]:number} = {a:1,b:2};
+   // const key1:string = "a";
+   // obj[key1]
+
+    const key2 = ["a"] as (keyof typeof obj)[];
+    obj[key2[0]];
+
+    //((arg: keyof typeof obj)=>obj[arg])(key2);
+    ((arg)=>obj[arg[0]])(key2);*/
+
+    //const obj:{[key: any]:number} = {a:1,b:2};
+   // const key1:string = "a";
+   // obj[key1]
+
+    const key2 = ["cos"] as (keyof typeof Math)[];
+    (Math[key2[0]])!.();
+
+    //((arg: keyof typeof obj)=>obj[arg])(key2);
+    ((arg)=>Math[arg[0]])(key2);
+
     const getPos = (
-      f:(rad: number) => number,
-      i:number
-    ) => minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0);
+      i:number,
+    ) => (([ "cos", "sin" ] as (keyof typeof Math)[]).map(
+      (fName: keyof typeof Math) => minorAdjuster(Math[key2[0]](2*Math.PI/divisionCount*i), 0.5, 0)
+    ));
 
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
 
-    const [ ax, ay, bx, by, mx, my] =
-      [ { method: Math.cos, index: id },
-        { method: Math.sin, index: id },
-        { method: Math.cos, index: id + 1 },
-        { method: Math.sin, index: id + 1 },
-        { method: Math.cos, index: id + 0.5 },
-        { method: Math.sin, index: id + 0.5 },
+    const [ a1x, a1y, b1x, b1y, mx, my] =
+      [ id ,
+        id + 1 ,
+        id + 0.5 ,
       ].map( ({method, index}: {
         method: (rad:number)=>number,
         index: number
       }) => getPos(method, index) );
+    const [ a2x, a2y, b2x, b2y ] =
     const cx = minorAdjuster(mx.raw, rescaledBorderWeight, 0.5);
     const cy = minorAdjuster(my.raw, rescaledBorderWeight, 0.5);
 
     const svg =
-      using ? <svg xmlns="http://www.w3.org/2000/svg">
+      using && divisionCount >= 2 ? <svg xmlns="http://www.w3.org/2000/svg">
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
-          <path d={`M ${cx.plus(ax)} ${cy.plus(ay)} a 0.5 0.5 0 ${divisionCount >= 2 ? 0 : 1} 1 ${bx.minus(ax)} ${by.minus(ay)} ${divisionCount >= 2 ? `L ${cx} ${cy}` : ''} Z`} fill="none"/>
+          <path d={`M ${cx.plus(ax.div(size))} ${cy.plus(ay.div(size))} a 0.5 0.5 0 0 1 ${bx.minus(ax)} ${by.minus(ay)} L ${cx} ${cy} Z`} fill="none"/>
         </clipPath>
       </svg> : '';
 
@@ -473,7 +483,7 @@ const Home = () => {
                 const config:{[key:string]:any} = {
                   layer: i,
                   id: j,
-                  size: UI_RING_WEGIHT_EACH_LAYER[i],
+                  size: UI_RING_WEIGHT_EACH_LAYER[i][1],
                   using: (using.from <= j) && (j < using.to)
                 }
                 switch(i) {
