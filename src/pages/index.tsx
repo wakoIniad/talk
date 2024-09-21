@@ -368,13 +368,19 @@ const Home = () => {
    f();*/
 
 
-    const getPos = (
+    /*const getPos = (
       i:number,
     ) => (([ "cos", "sin" ] as (keyof typeof Math)[]).map(
       (
         fName: keyof typeof Math
       ) => minorAdjuster((Math[fName] as Function)(2*Math.PI/divisionCount*i), 0.5, 0)
-    ));
+    ));*/
+
+    const getPos = (
+      i:number,
+    ) => [ Math.sin , Math.cos ].map(
+      (f, index) => ({[String.fromCharCode(121+index)]:minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0)})
+    );
 
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
