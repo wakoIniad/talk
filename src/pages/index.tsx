@@ -362,38 +362,24 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
-  /* const obj:{[key: any]:Function} = {a:()=>1};
-   const key = "a" as keyof typeof obj;
-   const f = obj[key] as Function
-   f();*/
-
-
-    /*const getPos = (
-      i:number,
-    ) => (([ "cos", "sin" ] as (keyof typeof Math)[]).map(
-      (
-        fName: keyof typeof Math
-      ) => minorAdjuster((Math[fName] as Function)(2*Math.PI/divisionCount*i), 0.5, 0)
-    ));*/
-
     const getPos = (
       i:number,
-    ) => [ Math.sin , Math.cos ].map(
-      (f, index) => ({[String.fromCharCode(121+index)]:minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0)})
-    );
+    ) => {
+      return {
+        x: minorAdjuster(Math.sin(2*Math.PI/divisionCount*i)),
+        y: minorAdjuster(Math.sin(2*Math.PI/divisionCount*i)),
+        }
+    }
 
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
 
-    const [ a1x, a1y, b1x, b1y, mx, my] =
+    const [ a1, b1, m ] =
       [ id ,
         id + 1 ,
         id + 0.5 ,
-      ].map( ({method, index}: {
-        method: (rad:number)=>number,
-        index: number
-      }) => getPos(method, index) );
-    const [ a2x, a2y, b2x, b2y ] =
+      ].map( (position: number) => getPos(position) );
+    const [ a2, b2 ] = [ a1, b1 ].map(p => [ p.x, p.y ])
     const cx = minorAdjuster(mx.raw, rescaledBorderWeight, 0.5);
     const cy = minorAdjuster(my.raw, rescaledBorderWeight, 0.5);
 
