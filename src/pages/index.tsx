@@ -380,8 +380,18 @@ const Home = () => {
    // const key1:string = "a";
    // obj[key1]
 
+   const obj:{[key: any]:number} = {a:()=>1,b:()=>2};
+   const key1:(keyof typeof obj)[] = ["a"] as (keyof typeof obj)[];
+   obj[key1[0]];
+
+
+   const obj3:{[key: any]:number} = {a:()=>1};
+   const key3:keyof typeof obj = "a" as keyof typeof obj;
+   const f = obj[key3] as Function
+   f();
+
     const key2 = ["cos"] as (keyof typeof Math)[];
-    (Math[key2[0]])!.();
+    const a = (Math[key2[0]]);
 
     //((arg: keyof typeof obj)=>obj[arg])(key2);
     ((arg)=>Math[arg[0]])(key2);
@@ -389,7 +399,9 @@ const Home = () => {
     const getPos = (
       i:number,
     ) => (([ "cos", "sin" ] as (keyof typeof Math)[]).map(
-      (fName: keyof typeof Math) => minorAdjuster(Math[key2[0]](2*Math.PI/divisionCount*i), 0.5, 0)
+      (
+        fName: keyof typeof Math
+      ) => minorAdjuster((Math[fName] as Function)(2*Math.PI/divisionCount*i), 0.5, 0)
     ));
 
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
