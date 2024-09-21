@@ -50,10 +50,10 @@ const usingUiInitial = [
 ];
 
 const pallet = [
-  'rgb(139,27,29)', 'rgb(240,211,0)', 'rgb(10,150,51)', 'rgb(109,183,196)', 'rgb(7,132,186)',
+  '139,27,29', '240,211,0', '10,150,51', '109,183,196', '7,132,186',
 ];
 const pallet2 = [
-  'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
+  '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
 
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.4,0.8] ];
@@ -425,9 +425,7 @@ const Home = () => {
     //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
     styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
     if(!styleSettings.opacity)styleSettings.opacity = activation_flag;
-    styleSettings.backgroundImage = `radial-gradient(rgba(255,255,255,0) ${
-      ringInnerRadius*100
-    }%,rgba(255,255,255,255) 100%)`
+
   }
 
   const button =
@@ -447,6 +445,13 @@ const Home = () => {
     return { button, svg, svg2:'' };
   }
 
+  function makeGradationBG(rgb:string,layer:number) {
+    console.log()
+    return `radial-gradient(rgba(255,255,255,0) ${
+      UI_RING_WEIGHT_EACH_LAYER[layer][0]/
+      UI_RING_WEIGHT_EACH_LAYER[layer][1]*100
+    }%,rgba(${rgb},1) 100%)`;
+  }
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
@@ -483,7 +488,8 @@ const Home = () => {
                   case 1:
                     if(loopIndex(uiDivisionCounts[i], new RawId(j)) === activeButtons[i]) {
                       config.styleSettings = {};
-                      config.styleSettings.background = 'rgba(220,220,220,1)';
+                      config.styleSettings.background =
+                      makeGradationBG('220,220,220',i)
                     }
                     break;
                   case 2:
@@ -492,10 +498,11 @@ const Home = () => {
                       config.styleSettings.zIndex = 5;
                       const palletIndex = j-using.from;
                       config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
-                      config.styleSettings.backgroundColor = pallet[palletIndex];
+                      config.styleSettings.background =
+                      makeGradationBG(pallet[palletIndex],i);
                       if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
                         config.styleSettings.backgroundColor = 'rgba(220,220,220,1)';
-                        config.styleSettings.borderColor = pallet[palletIndex];
+                        config.styleSettings.borderColor = `rgb(${pallet[palletIndex]})`;
                       }
                     }
                     break;
