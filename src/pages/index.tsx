@@ -362,39 +362,11 @@ const Home = () => {
 
     const activation_flag = using ? 1: 0;
 
-    /*const obj:{[key: any]:number} = {a:1,b:2};
-    const key:keyof typeof obj = "a" as keyof typeof obj;
-    obj[key]*/
+  /* const obj:{[key: any]:Function} = {a:()=>1};
+   const key = "a" as keyof typeof obj;
+   const f = obj[key] as Function
+   f();*/
 
-/*    const obj:{[key: any]:number} = {a:1,b:2};
-   // const key1:string = "a";
-   // obj[key1]
-
-    const key2 = ["a"] as (keyof typeof obj)[];
-    obj[key2[0]];
-
-    //((arg: keyof typeof obj)=>obj[arg])(key2);
-    ((arg)=>obj[arg[0]])(key2);*/
-
-    //const obj:{[key: any]:number} = {a:1,b:2};
-   // const key1:string = "a";
-   // obj[key1]
-
-   const obj:{[key: any]:number} = {a:()=>1,b:()=>2};
-   const key1:(keyof typeof obj)[] = ["a"] as (keyof typeof obj)[];
-   obj[key1[0]];
-
-
-   const obj3:{[key: any]:number} = {a:()=>1};
-   const key3:keyof typeof obj = "a" as keyof typeof obj;
-   const f = obj[key3] as Function
-   f();
-
-    const key2 = ["cos"] as (keyof typeof Math)[];
-    const a = (Math[key2[0]]);
-
-    //((arg: keyof typeof obj)=>obj[arg])(key2);
-    ((arg)=>Math[arg[0]])(key2);
 
     const getPos = (
       i:number,
