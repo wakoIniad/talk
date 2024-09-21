@@ -1,0 +1,163 @@
+@charset "UTF-8";
+/**
+ * pre-processing of SCSS
+*/
+@font-face {
+  font-family: "PlemolJP";
+  src: url("/font/PlemolJP_HS/PlemolJPHS-Regular.ttf") format("truetype");
+}
+/**
+ * parts styles
+*/
+/**
+ * frame styles
+*/
+.container {
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "UD デジタル 教科書体 N-R", "BIZ UDゴシック Regular", "Hiragino Kaku Gothic ProN", "ascii";
+}
+
+.input_ui_container {
+  width: 100vmin;
+  height: 100vmin;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.input_ui_btn {
+  position: absolute;
+  background: rgb(220, 220, 220);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  z-index: 3;
+  border-style: none;
+  filter: drop-shadow(0px 0px 100px #999);
+}
+
+.input_ui_btn_0 {
+  z-index: 4;
+  border-style: none;
+  filter: drop-shadow(0px 0px 30px #999);
+}
+
+.input_ui_btn_1 {
+  z-index: 3;
+  border-style: none;
+  filter: drop-shadow(0px 0px 30px #999);
+}
+
+.input_ui_btn_2 {
+  width: 0%;
+  height: 0%;
+  background-color: rgb(0, 0, 0);
+  z-index: 5;
+  border-style: none;
+  filter: drop-shadow(0px 0px 30px #999);
+}
+
+.input_ui_btn_1_0 {
+  background-color: rgb(20, 20, 20);
+}
+
+.input_ui_btn_1_1 {
+  background-color: rgb(80, 60, 60);
+}
+
+.input_ui_btn_1_2 {
+  background-color: rgb(20, 20, 20);
+}
+
+.input_ui_btn_1_3 {
+  background-color: rgb(80, 60, 60);
+}
+
+.input_ui_btn_1_4 {
+  background-color: rgb(20, 20, 20);
+}
+
+.input_ui_btn_1_5 {
+  background-color: rgb(80, 60, 60);
+}
+
+.input_ui_btn_1_6 {
+  background-color: rgb(20, 20, 20);
+}
+
+.input_ui_btn_1_7 {
+  background-color: rgb(80, 60, 60);
+}
+
+.input_ui_btn_1_8 {
+  background-color: rgb(20, 20, 20);
+}
+
+.input_ui_btn_1_9 {
+  background-color: rgb(80, 60, 60);
+}
+
+/**
+ * Non-control UI
+*/
+.message_display {
+  background: linear-gradient(to right, rgba(200, 200, 200, 0.8), rgba(200, 200, 200, 0.1), rgba(200, 200, 200, 0.8));
+  text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
+  height: 95%;
+  width: 20%;
+  position: absolute;
+  left: 1em;
+  font-weight: bold;
+  overflow-wrap: break-word;
+  font-size: 3em;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.message_text {
+  color: rgb(255, 208, 80);
+  width: 100%;
+  height: calc(100% - 5em);
+  top: 0;
+  position: absolute;
+  padding: 10px;
+}
+
+.line_button {
+  width: 100%;
+  height: 5em;
+  background-color: rgb(6, 199, 85);
+  position: absolute;
+  bottom: 0;
+  font-size: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.my_note {
+  background: linear-gradient(to right, rgba(200, 200, 200, 0.8), rgba(200, 200, 200, 0.1), rgba(200, 200, 200, 0.8));
+  text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
+  height: 95%;
+  width: 20%;
+  position: absolute;
+  right: 1em;
+  font-weight: bold;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  font-size: x-large;
+  z-index: 10;
+}
+
+/**
+ * post-processing of SCSS
+*//*# sourceMappingURL=index.module.css.map */

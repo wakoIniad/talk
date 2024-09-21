@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
 
 import styles from './index.module.scss';
 
@@ -41,12 +41,13 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 2, 10, 30-5 ];
+const uiDivisionCounts = [ 2, 10, 30-5, 50 ];
 
 const usingUiInitial = [
   {from: 0, to: 2},
   {from: 0, to: uiDivisionCounts[1]},
-  {from: 0, to:0}
+  {from: 0, to:0},
+  {from: 0, to:50},
 ];
 
 const pallet = [
@@ -56,7 +57,8 @@ const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
 
-const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.4,0.8] ];
+const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.4,0.8], [0.7, 1] ];
+const UI_TEXT_POS = [ 1, 1.5, 1, 1 ]
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -90,17 +92,19 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
+  const [touchedId, setTouchedId] = useState([-1,-1]);
+  const [uiGenerated, setUiGenerated] = useState(false);
   let updateMessageText:string = messageText;
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
-  console.log(LineTextParser(messageText));
+  //console.log(LineTextParser(messageText));
   /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
   console.log(messageText);*/
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
-  function makeUsinUIElement(consonant:string, Vowel:string, displayName?: string) {
+  function makeUsingUIElement(consonant:string, Vowel:string, displayName?: string) {
     const hiraganaList = Vowel.split('')
     .map(vowel=> new ButtonElement({
       name: Hiraganizer(consonant+vowel),
@@ -129,7 +133,20 @@ const Home = () => {
   }
 
   let optCheckResult:boolean = false;
+  function uiTouched(args: {rawId: RawId, layer: number}) {
+    const {rawId, layer} = args;
+    //console.log("Item was touched",new Date());
+    const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
+    if(touchedId.join(",") !== thisTouchId.join(",")) {
+      uiClicked(args);
+    }
+    console.log("touchMOVE")
+    setTouchedId(thisTouchId);
+  }
   function uiClicked(args: {rawId: RawId, layer: number}) {
+    uiHandler(args);
+  }
+  function uiHandler(args: {rawId: RawId, layer: number}) {
     const {rawId, layer} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     console.log('id',id,'layer',layer);
@@ -385,12 +402,14 @@ const Home = () => {
     const [ a2x, a2y, b2x, b2y ] = [ ax, ay, bx, by ].map(
       d => d.mul(ringInnerRadius)
     );
-    console.log(ringInnerRadius)
     const cx = minorAdjuster(mx.raw, rescaledBorderWeight, 0.5);
     const cy = minorAdjuster(my.raw, rescaledBorderWeight, 0.5);
 
     const svg =
-      using && divisionCount >= 2 ? <svg xmlns="http://www.w3.org/2000/svg">
+      using && divisionCount >= 2 ? <svg
+        style={{pointerEvents:'none'}}
+        xmlns="http://www.w3.org/2000/svg"
+        >
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
           <path d={
             `M ${cx.plus(a2x)} ${cy.plus(a2y)}`+
@@ -402,14 +421,15 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*1, 0.5);
-    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*1, 0.5);
+    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
+    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1 1"
         id={`btn_visual_${layer}_${id}`}
         preserveAspectRatio="xMidYMid meet"
+        style={{pointerEvents:'none'}}
       ><text
         x={`${tx}`} y={`${ty}`}
         fontSize={rescaledFontSize*0.75} stroke="green" fill="white"
@@ -429,33 +449,110 @@ const Home = () => {
   }
 
   const button =
-  <button
-    className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
-    ${styles[`input_ui_btn_${layer}_${id}`]}
-    ${using ? styles.ExpansionRing : '' }`
-    }
-    onClick={()=>uiClicked({ layer:layer, rawId:rawId })}
-    style={{
-      width: `${100*size*activation_flag}%`,
-      height: `${100*size*activation_flag}%`,
-      visibility: `${using? 'visible': 'hidden'}`,
-      ...styleSettings,
-    }}
-  >{svg2}</button>;
+    <CustomButton
+      layer={layer}
+      rawId={rawId}
+      className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+      ${styles[`input_ui_btn_${layer}_${id}`]}
+      ${using ? styles.ExpansionRing : '' }`
+      }
+      onClick={()=>uiClicked({ layer:layer, rawId:rawId })}
+      style={{
+        width: `${100*size*activation_flag}%`,
+        height: `${100*size*activation_flag}%`,
+        visibility: `${using? 'visible': 'hidden'}`,
+        ...styleSettings,
+      }}
+    >
+      {svg2}
+    </CustomButton>;
     return { button, svg, svg2:'' };
   }
 
+  type CustomButtonProps = {
+    layer: number,
+    rawId: RawId,
+  };
+
+  const CustomButton = ({ children, layer, rawId, style, ...props }
+    : CustomButtonProps&React.ComponentProps<'button'> )=>{
+    if(uiGenerated !== true) {
+      const buttonRef = useRef<HTMLButtonElement>(null!);
+      const handleTouchStart = (event:any) => {
+        console.log("touchSTART")
+        event.preventDefault();
+        //uiTouched({ rawId: rawId, layer:layer})
+      };
+      const handleTouchMove = (event:any) => {
+        console.log("touchMOVE")
+        event.preventDefault();
+
+        const element = document.elementFromPoint(event.touches[0].clientX,event.touches[0].clientY);
+        if(element instanceof HTMLElement) {
+          const elementId = element.getAttribute('id')
+          if(elementId !== null) {
+            const [ _type, eElmLayer, eElmId ] = elementId.split('-');
+            uiTouched({ rawId: new RawId(Number(eElmId)), layer: Number(eElmLayer) })
+          }
+        }
+      };
+      const handleTouchEnd = (event:any) => {
+        console.log("touchEND")
+        event.preventDefault();
+        //uiTouched({ rawId: rawId, layer:layer})
+      };
+
+      setUiGenerated(true);
+      useEffect(() => {
+        const itemElement = buttonRef.current;
+        itemElement.addEventListener("touchstart", handleTouchStart, { passive: false });
+        itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+        itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+
+        return () => {
+          //itemElement.removeEventListener("touchstart", handleTouchStart);
+          //itemElement.removeEventListener("touchmove", handleTouchMove);
+          //itemElement.removeEventListener("touchend", handleTouchEnd);
+        };
+      }, []);
+    }
+    const additionStyle:{[key: string]: string} = {}
+    /*if(touchedId.join(',') === [loopIndex(uiDivisionCounts[layer], rawId),layer].join(',')) {
+      additionStyle.pointerEvents = 'none';
+      console.log("events:none")
+    }*/
+    return (
+       // 登録したイベントリスナーをrefを使って参照する
+      <button ref={buttonRef}
+        {...props}
+        style={{...style, ...additionStyle}}
+        id={`btn-${layer}-${loopIndex(uiDivisionCounts[layer],rawId)}`}
+      >
+        {children}
+      </button>
+    );
+  }
+
   function makeGradationBG(rgb:string,layer:number) {
-    console.log()
-    return `radial-gradient(rgba(255,255,255,0) ${
-      UI_RING_WEIGHT_EACH_LAYER[layer][0]/
-      UI_RING_WEIGHT_EACH_LAYER[layer][1]*100
-    }%,rgba(${rgb},1) 100%)`;
+    const R =
+    UI_RING_WEIGHT_EACH_LAYER[layer][0]/
+    UI_RING_WEIGHT_EACH_LAYER[layer][1]*0.8;
+    const step = 0.2
+
+    const result = `radial-gradient(rgba(${rgb},0) ${R*100}%,`+
+    new Array(1/step).fill(0).map((v,i)=>(step+i*step)*100).map(p=>
+      `rgba(${rgb},${
+        ((Math.log(p/100*Math.E+Math.E)-1)/(Math.log(2*Math.E)-1))**
+        (1/8)
+      }) ${p + (100-p)*R}%`
+    ).join(",");
+    return result;
   }
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
-        <span className={`${styles.message_text}`}>
+        <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {messageText}
         </span>
         <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
@@ -502,7 +599,7 @@ const Home = () => {
                       makeGradationBG(pallet[palletIndex],i);
                       if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
                         config.styleSettings.backgroundColor = 'rgba(220,220,220,1)';
-                        config.styleSettings.borderColor = `rgb(${pallet[palletIndex]})`;
+                        config.styleSettings.borderColor = pallet[palletIndex];
                       }
                     }
                     break;
