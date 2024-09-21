@@ -57,8 +57,8 @@ const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
 
-const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.4,0.8], [0.7, 1] ];
-const UI_TEXT_POS = [ 1, 1.5, 1, 1 ]
+const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
+const UI_TEXT_POS = [ 1, 1.25, 0.8, 1 ]
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -92,8 +92,9 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
-  const [touchedId, setTouchedId] = useState([-1,-1]);
-  const [uiGenerated, setUiGenerated] = useState(false);
+  const touchedId = useRef([-1,-1]);
+  const uiGenerated = useRef(false);
+  const touchPos = useRef<number[]>([-1,-1]);
   let updateMessageText:string = messageText;
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
@@ -133,30 +134,39 @@ const Home = () => {
   }
 
   let optCheckResult:boolean = false;
-  function uiTouched(args: {rawId: RawId, layer: number}) {
+  function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
     //console.log("Item was touched",new Date());
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
-    if(touchedId.join(",") !== thisTouchId.join(",")) {
+    if(touchedId.current.join(",") !== thisTouchId.join(",")) {
       uiClicked(args);
     }
+    uiClicked(args);
+    //uiClicked(args);
     console.log("touchMOVE")
-    setTouchedId(thisTouchId);
+    touchedId.current = thisTouchId;
   }
-  function uiClicked(args: {rawId: RawId, layer: number}) {
+  function uiClicked(args:uiHandlerInterface) {
     uiHandler(args);
   }
-  function uiHandler(args: {rawId: RawId, layer: number}) {
-    const {rawId, layer} = args;
+
+  interface uiHandlerInterface {
+    rawId: RawId, layer: number,
+    options?: {
+      click?: boolean,
+      select?: boolean
+    }
+  }
+  function uiHandler(args:uiHandlerInterface) {
+    const {rawId, layer, options: { click = false, select = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
-    console.log('id',id,'layer',layer);
     const inputElm = getUiElementFromLayer(layer,rawId);
 
     updateMessageText = messageText;
 
     switch(layer) {
       case 0:
-
+        if(!click) break;
         usingUI[2].to = usingUI[2].from;
         setUsingUI([...usingUI]);
         let enableDelete = false;
@@ -204,7 +214,7 @@ const Home = () => {
         setUsingCenterUI({...usingCenterUI});
         break;
       case 1:
-        if( activeButtons[1] === id ) {
+        if( activeButtons[1] === id && click) {
 
           activeButtons[1] = -1;
           activeButtons[2] = -1;
@@ -215,18 +225,20 @@ const Home = () => {
         } else {
           usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
           usingUI[2].to = usingUI[2].from+5;
-          setUsingUI([...usingUI]);
           activeButtons[1] = id;
           activeButtons[2] = -1;
         }
 
+        setUsingUI([...usingUI]);
         setActiveButtons([...activeButtons]);
         break;
       case 2:
-        updateMessageText = messageText+inputElm.displayName;
 
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
+
+        if(!(click || select))break;
+        updateMessageText = messageText+inputElm.displayName;
 
         optCheckResult = optionableChecker(
           inputElm.value,
@@ -456,11 +468,14 @@ const Home = () => {
       ${styles[`input_ui_btn_${layer}_${id}`]}
       ${using ? styles.ExpansionRing : '' }`
       }
-      onClick={()=>uiClicked({ layer:layer, rawId:rawId })}
+      onClick={()=>uiClicked({ layer:layer, rawId:rawId, options: {
+        click: true
+      } })}
       style={{
         width: `${100*size*activation_flag}%`,
         height: `${100*size*activation_flag}%`,
         visibility: `${using? 'visible': 'hidden'}`,
+        pointerEvents: `${using? 'auto': 'none'}`,
         ...styleSettings,
       }}
     >
@@ -474,49 +489,54 @@ const Home = () => {
     rawId: RawId,
   };
 
+  function idToRawId(id: number, layer: number) {
+    const offset = usingUI[layer].from;
+    return new RawId((Number(id)-offset)%uiDivisionCounts[Number(layer)]+offset)
+  }
+
   const CustomButton = ({ children, layer, rawId, style, ...props }
     : CustomButtonProps&React.ComponentProps<'button'> )=>{
-    if(uiGenerated !== true) {
-      const buttonRef = useRef<HTMLButtonElement>(null!);
-      const handleTouchStart = (event:any) => {
-        console.log("touchSTART")
-        event.preventDefault();
-        //uiTouched({ rawId: rawId, layer:layer})
-      };
-      const handleTouchMove = (event:any) => {
-        console.log("touchMOVE")
-        event.preventDefault();
 
-        const element = document.elementFromPoint(event.touches[0].clientX,event.touches[0].clientY);
+    const getUiElementTouched = (e: any, etype:string)=> {
+        if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
+        const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
+        if(etype === "end") {
+          touchPos.current = [-1,-1];
+        }
         if(element instanceof HTMLElement) {
-          const elementId = element.getAttribute('id')
+          const elementId = element.getAttribute('id');
           if(elementId !== null) {
-            const [ _type, eElmLayer, eElmId ] = elementId.split('-');
-            uiTouched({ rawId: new RawId(Number(eElmId)), layer: Number(eElmLayer) })
+            const [ _type, elmLayer, elmId ] = elementId.split('_');
+            uiTouched({
+              rawId: idToRawId(Number(elmId),Number(elmLayer)),
+              layer: Number(elmLayer), options: {
+                click: etype === "start",
+                select: etype === "end",
+              }
+            })
           }
         }
-      };
-      const handleTouchEnd = (event:any) => {
-        console.log("touchEND")
-        event.preventDefault();
-        //uiTouched({ rawId: rawId, layer:layer})
-      };
-
-      setUiGenerated(true);
-      useEffect(() => {
-        const itemElement = buttonRef.current;
-        itemElement.addEventListener("touchstart", handleTouchStart, { passive: false });
-        itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
-        itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
-
-
-        return () => {
-          //itemElement.removeEventListener("touchstart", handleTouchStart);
-          //itemElement.removeEventListener("touchmove", handleTouchMove);
-          //itemElement.removeEventListener("touchend", handleTouchEnd);
-        };
-      }, []);
     }
+    const buttonRef = useRef<HTMLButtonElement>(null!);
+    const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
+
+    const handleTouchMove = (e:any)=>getUiElementTouched(e,"move");
+
+    const handleTouchEnd = (e:any)=>getUiElementTouched(e,"end");
+
+
+    useEffect(() => {
+      const itemElement = buttonRef.current;
+      //itemElement.RemoveAllListeners();
+     // itemElement.addEventListener("touchstart", handleTouchStart, { passive: false });
+      itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+      itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+
+      return () => {
+      };
+    }, []);
+
     const additionStyle:{[key: string]: string} = {}
     /*if(touchedId.join(',') === [loopIndex(uiDivisionCounts[layer], rawId),layer].join(',')) {
       additionStyle.pointerEvents = 'none';
@@ -527,7 +547,7 @@ const Home = () => {
       <button ref={buttonRef}
         {...props}
         style={{...style, ...additionStyle}}
-        id={`btn-${layer}-${loopIndex(uiDivisionCounts[layer],rawId)}`}
+        id={`btn_${layer}_${loopIndex(uiDivisionCounts[layer],rawId)}`}
       >
         {children}
       </button>
@@ -592,13 +612,13 @@ const Home = () => {
                   case 2:
                     if(config.using === true) {
                       config.styleSettings = {};
-                      config.styleSettings.zIndex = 5;
+//                      config.styleSettings.zIndex = 5;
                       const palletIndex = j-using.from;
                       config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
                       config.styleSettings.background =
                       makeGradationBG(pallet[palletIndex],i);
                       if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
-                        config.styleSettings.backgroundColor = 'rgba(220,220,220,1)';
+                        config.styleSettings.background = 'rgba(220,220,220,1)';
                         config.styleSettings.borderColor = pallet[palletIndex];
                       }
                     }
