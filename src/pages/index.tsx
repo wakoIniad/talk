@@ -363,30 +363,42 @@ const Home = () => {
     const activation_flag = using ? 1: 0;
 
     const getPos = (
-      i:number,
-    ) => {
-      return {
-        x: minorAdjuster(Math.sin(2*Math.PI/divisionCount*i)),
-        y: minorAdjuster(Math.sin(2*Math.PI/divisionCount*i)),
-        }
-    }
+      f:(rad: number) => number,
+      i:number
+    ) => minorAdjuster(f(2*Math.PI/divisionCount*i), 0.5, 0);
 
     const minorAdjuster = (original:number, delta: number = 1, offset: number = 0)=>
       new Result(offset + delta*original, (raw: number) => raw.toFixed(20));
 
-    const [ a1, b1, m ] =
-      [ id ,
-        id + 1 ,
-        id + 0.5 ,
-      ].map( (position: number) => getPos(position) );
-    const [ a2, b2 ] = [ a1, b1 ].map(p => [ p.x, p.y ])
+    const [ ax, ay, bx, by, mx, my] =
+      [ { method: Math.cos, index: id },
+        { method: Math.sin, index: id },
+        { method: Math.cos, index: id + 1 },
+        { method: Math.sin, index: id + 1 },
+        { method: Math.cos, index: id + 0.5 },
+        { method: Math.sin, index: id + 0.5 },
+      ].map( ({method, index}: {
+        method: (rad:number)=>number,
+        index: number
+      }) => getPos(method, index) );
+    const ringInnerRadius = UI_RING_WEIGHT_EACH_LAYER[layer][0]/size
+    const [ a2x, a2y, b2x, b2y ] = [ ax, ay, bx, by ].map(
+      d => d.mul(ringInnerRadius)
+    );
+    console.log(ringInnerRadius)
     const cx = minorAdjuster(mx.raw, rescaledBorderWeight, 0.5);
     const cy = minorAdjuster(my.raw, rescaledBorderWeight, 0.5);
 
     const svg =
       using && divisionCount >= 2 ? <svg xmlns="http://www.w3.org/2000/svg">
         <clipPath id={`btn_clip_${layer}_${id}`} clipPathUnits="objectBoundingBox">
-          <path d={`M ${cx.plus(ax.div(size))} ${cy.plus(ay.div(size))} a 0.5 0.5 0 0 1 ${bx.minus(ax)} ${by.minus(ay)} L ${cx} ${cy} Z`} fill="none"/>
+          <path d={
+            `M ${cx.plus(a2x)} ${cy.plus(a2y)}`+
+            `a ${[ringInnerRadius,ringInnerRadius].join(" ")} 0 0 1 ${b2x.minus(a2x)} ${b2y.minus(a2y)}`+
+            `l ${bx.minus(b2x)} ${by.minus(b2y)}`+
+            `a 0.5 0.5 0 0 1 ${ax.minus(bx)} ${ay.minus(by)}`+`Z`
+
+        } fill="none"/>
         </clipPath>
       </svg> : '';
 
@@ -545,6 +557,10 @@ class Result extends String {
 
   div(e:Result|number) {
     return new Result(this.raw / (typeof e === 'number' ? e : e.raw), this.callback)
+  }
+
+  mul(e:Result|number) {
+    return new Result(this.raw * (typeof e === 'number' ? e : e.raw), this.callback)
   }
 }
 
