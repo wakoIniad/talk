@@ -42,7 +42,7 @@ const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
 /**重要:localhostで使わない場合は消す！！ */
-const LINE_ACCESS_TOKEN = '当分gitHubに送るから、自分で書いて！';
+const LINE_ACCESS_TOKEN = '';
 
 const uiDivisionCounts = [ 2, 10, 30-5 ];
 
@@ -93,6 +93,8 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
+  let updateMessageText:string = messageText;
+
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
   console.log(LineTextParser(messageText));
   /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
@@ -116,7 +118,8 @@ const Home = () => {
   }
 
   async function sendToLine(message: string) {
-    const config = {
+    console.log("送信中...")
+    /*const config = {
       'method' : 'post',
       'headers': {
         'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN
@@ -125,8 +128,17 @@ const Home = () => {
         'message': LineTextParser(message)
       }
     };
-    const res = await fetch('https://notify-api.line.me/api/notify', config);
+    const res = await fetch('https://notify-api.line.me/api/notify', config);*/
 
+    const config = {
+      'method' : 'post',
+      'headers': { "Content-Type": "application/json" },
+      'body': JSON.stringify({ 'message': LineTextParser(message) }),
+    };
+    const res = await fetch('/api/line',config)
+    setMssageText("");
+    console.log("送信されました～");
+    console.info(res);
   }
 
   let optCheckResult:boolean = false;
@@ -136,7 +148,7 @@ const Home = () => {
     console.log('id',id,'layer',layer);
     const inputElm = getUiElementFromLayer(layer,rawId);
 
-    let updateText:string = messageText;
+    updateMessageText = messageText;
 
     switch(layer) {
       case 0:
@@ -147,14 +159,12 @@ const Home = () => {
 
         if(inputElm.displayName.length > 0) {
           const deleted = messageText.slice(-1);
-          updateText = messageText.slice(0,-1)+inputElm.value;
+          updateMessageText = messageText.slice(0,-1)+inputElm.value;
 
-          Object.keys(usingCenterUI).forEach(key=> {
-            usingCenterUI[key] = new ButtonElement({name: '', value:''});
-          });
+          resetCenterUI("default");
 
           if(inputElm.displayName === 'delete') {
-            const hiragana = updateText.slice(-1);
+            const hiragana = updateMessageText.slice(-1);
             if(hiragana) {
               optCheckResult = optionableChecker(
                 r.romanize(hiragana).toLowerCase(),
@@ -179,7 +189,7 @@ const Home = () => {
         } else {
           usingCenterUI.space = new ButtonElement({
             name: 'space',
-            value: updateText.slice(-1)+'_'
+            value: updateMessageText.slice(-1)+'_'
           });
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
@@ -190,15 +200,26 @@ const Home = () => {
         setUsingCenterUI({...usingCenterUI});
         break;
       case 1:
-        usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
-        usingUI[2].to = usingUI[2].from+5;
-        setUsingUI([...usingUI]);
-        activeButtons[1] = id;
-        activeButtons[2] = -1;
+        if( activeButtons[1] === id ) {
+
+          activeButtons[1] = -1;
+          activeButtons[2] = -1;
+
+          usingUI[2].to = usingUI[2].from;
+
+          resetCenterUI("message-control");
+        } else {
+          usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
+          usingUI[2].to = usingUI[2].from+5;
+          setUsingUI([...usingUI]);
+          activeButtons[1] = id;
+          activeButtons[2] = -1;
+        }
+
         setActiveButtons([...activeButtons]);
         break;
       case 2:
-        updateText = messageText+inputElm.displayName;
+        updateMessageText = messageText+inputElm.displayName;
 
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
@@ -215,17 +236,35 @@ const Home = () => {
           });
           usingCenterUI.delete = new ButtonElement({name: '', value: ''});
         } else {
-          usingCenterUI.space = new ButtonElement({
-            name: 'space',
-            value: updateText.slice(-1)+'_'
-          });
-          usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+          resetCenterUI("message-control");
+
+
         }
         setUsingCenterUI({...usingCenterUI});
         break;
     }
 
-    setMssageText(updateText);
+    setMssageText(updateMessageText);
+  }
+
+  function resetCenterUI(mode: string) {
+    Object.keys(usingCenterUI).forEach(key=> {
+      usingCenterUI[key] = new ButtonElement({name: '', value:''});
+    });
+
+    switch(mode) {
+      case 'message-control':
+        usingCenterUI.space = new ButtonElement({
+          name: 'space',
+          value: updateMessageText.slice(-1)+'_'
+        });
+        usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
+        break;
+      case 'character-modify':
+        break;
+      default:
+        break;
+    }
   }
 
   function optionableChecker(
@@ -238,7 +277,7 @@ const Home = () => {
     const exclude = options?.exclude || [];
     const [ consonant, vowel ] = romaji.split('');
     let optionIsAvaliable = false;
-    if(['k','s','d','h'].includes(consonant) && !exclude.includes('dakuten')) {
+    if(['t','k','s','h'].includes(consonant) && !exclude.includes('dakuten')) {
       const display = [hiragana, DAKUTEN_UNICODE].join("");
       usingCenterUI.dakuten = new ButtonElement({
         name: 'dakuten',
@@ -289,7 +328,7 @@ const Home = () => {
     switch(layer) {
       case 0:
         const usableOptions:Array<string> = [];
-        ['dakuten','handakuten','small','space','delete',].forEach(key=> {
+        ['dakuten','handakuten','small','delete','space'].forEach(key=> {
           if(usingCenterUI[key].displayName.length > 0) {
             usableOptions.push(key);
           }
@@ -375,9 +414,9 @@ const Home = () => {
         preserveAspectRatio="xMidYMid meet"
       ><text
         x={`${tx}`} y={`${ty}`}
-        font-size={rescaledFontSize*0.75} stroke="green" fill="white"
-        text-anchor="middle" stroke-width={rescaledStrokeWeight}
-        dominant-baseline="middle"
+        fontSize={rescaledFontSize*0.75} stroke="green" fill="white"
+        textAnchor="middle" strokeWidth={rescaledStrokeWeight}
+        dominantBaseline="middle"
       >
         {getDisplayName(layer,getUiElementFromLayer(layer,rawId).displayName)}
       </text>
@@ -545,5 +584,19 @@ class RawId extends Number {
   }
   parse() {
     return this.raw;
+  }
+}
+
+/*class SafetyVariable {
+  constructor(value) {
+    this.value = value;
+  }
+}*/
+
+function createSafetyVariable<T>(value: T):new (...args: any[]) => {} {
+  return class extends (Object.getPrototypeOf(value).constructor) {
+    constructor(value: T) {
+      super(value);
+    }
   }
 }
