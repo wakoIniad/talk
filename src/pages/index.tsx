@@ -56,7 +56,7 @@ const pallet2 = [
   'rgb(246,162,230)', 'rgb(218,162,248)', 'rgb(194,205,250)', 'rgb(153,232,236)', 'rgb(250,255,255)',
 ];
 
-const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.6,1] ];
+const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.4,0.8] ];
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -396,7 +396,7 @@ const Home = () => {
             `M ${cx.plus(a2x)} ${cy.plus(a2y)}`+
             `a ${[ringInnerRadius,ringInnerRadius].join(" ")} 0 0 1 ${b2x.minus(a2x)} ${b2y.minus(a2y)}`+
             `l ${bx.minus(b2x)} ${by.minus(b2y)}`+
-            `a 0.5 0.5 0 0 1 ${ax.minus(bx)} ${ay.minus(by)}`+`Z`
+            `a 0.5 0.5 0 0 0 ${ax.minus(bx)} ${ay.minus(by)}`+`Z`
 
         } fill="none"/>
         </clipPath>
@@ -425,7 +425,11 @@ const Home = () => {
     //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
     styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
     if(!styleSettings.opacity)styleSettings.opacity = activation_flag;
+    styleSettings.backgroundImage = `radial-gradient(rgba(255,255,255,0) ${
+      ringInnerRadius*100
+    }%,rgba(255,255,255,255) 100%)`
   }
+
   const button =
   <button
     className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
@@ -442,6 +446,7 @@ const Home = () => {
   >{svg2}</button>;
     return { button, svg, svg2:'' };
   }
+
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
@@ -478,13 +483,13 @@ const Home = () => {
                   case 1:
                     if(loopIndex(uiDivisionCounts[i], new RawId(j)) === activeButtons[i]) {
                       config.styleSettings = {};
-                      config.styleSettings.backgroundColor = 'rgba(220,220,220,1)'
+                      config.styleSettings.background = 'rgba(220,220,220,1)';
                     }
                     break;
                   case 2:
                     if(config.using === true) {
                       config.styleSettings = {};
-                      config.styleSettings.zIndex = 3//5;
+                      config.styleSettings.zIndex = 5;
                       const palletIndex = j-using.from;
                       config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
                       config.styleSettings.backgroundColor = pallet[palletIndex];
