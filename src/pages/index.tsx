@@ -12,7 +12,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 
 
 import localfont from "next/font/local";
-import { exitCode } from 'process';
+import { exitCode, off } from 'process';
 
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
@@ -515,10 +515,12 @@ const Home = () => {
 
   function idToRawId(id: number, layer: number) {
     const offset = usingUI[layer].from;
-    const OPEN_INDEX_DIRECTION = +1;//<発見>これの正負でループが発生する方向が変わる！！
+    const OPEN_INDEX_DIRECTION = Math.max(offset/((offset**2)**0.5)||0, 0);
+    const len = uiDivisionCounts[Number(layer)];
+    const lenWithSign = OPEN_INDEX_DIRECTION * len;
     return new RawId(
-      (Number(id)+offset*OPEN_INDEX_DIRECTION)%
-      uiDivisionCounts[Number(layer)]-offset*OPEN_INDEX_DIRECTION);
+          (Number(id)-offset-lenWithSign)%len+offset+lenWithSign
+    );
   }
 
   const CustomButton = ({ children, layer, rawId, style, ...props }
