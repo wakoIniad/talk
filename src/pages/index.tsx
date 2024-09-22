@@ -142,9 +142,11 @@ const Home = () => {
   function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
-    if(touchedId.current.join(",") !== thisTouchId.join(",")) {
+    const same = touchedId.current.join(",") !== thisTouchId.join(",");
+    if(same) {
       firstTouch.current = false;
     }
+    args.options.same = same;
     uiClicked(args);
     //uiClicked(args);
     //uiClicked(args);
@@ -159,7 +161,8 @@ const Home = () => {
     rawId: RawId, layer: number,
     options?: {
       click?: boolean,
-      select?: boolean
+      select?: boolean,
+      same?: boolean,
     }
   }
   function releaseUiOverLayer(layer: number) {
@@ -182,7 +185,7 @@ const Home = () => {
     });
   }
   function uiHandler(args:uiHandlerInterface) {
-    const {rawId, layer, options: { click = false, select = false } = {}} = args;
+    const {rawId, layer, options: { click = false, select = false, same = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     if(click || select)console.log(id, rawId, layer, usingUI[layer]);
     const inputElm = getUiElementFromLayer(layer,rawId);
@@ -269,6 +272,7 @@ const Home = () => {
         setActiveButtons([...activeButtons]);
         break;
       case 2:
+        if(same&&!(click||select))break;
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
@@ -285,7 +289,7 @@ const Home = () => {
           usingUI[3].from = 2 * id;
           usingUI[3].to = usingUI[3].from + optCheckResult.length;
 
-          if(!(click || select))break;
+//          if(!(click || select))break;
           //updateMessageText = messageText+inputElm.displayName;
           if(UI_MODE === 0) {
             usingCenterUI.space = new ButtonElement({
@@ -308,7 +312,7 @@ const Home = () => {
         break;
       case 3:
         activeButtons[3] = id;
-        if(click || select) {
+        if(click || select) {//click と select 同時にできないようにする
           if(inputElm.displayName.length > 0) {
             const deleted = messageText.slice(-1);
             updateMessageText = messageText.slice(0,-1)+inputElm.value;
@@ -317,6 +321,7 @@ const Home = () => {
           }
         }
         setActiveButtons([...activeButtons]);
+        break;
     }
 
     setMssageText(updateMessageText);
