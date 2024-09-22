@@ -1,3 +1,5 @@
+const UI_MODE:number = 1;
+
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 
 import styles from './index.module.scss';
@@ -52,6 +54,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
 ];
 
+const fontMagnification = [ 1, 1, 1, 0.5 ];
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
 const UI_TEXT_POS = [ 1, 1.25, 1.4, 1.9 ]
 
@@ -171,6 +174,13 @@ const Home = () => {
     setUsingUI([...usingUI]);
     setActiveButtons([...activeButtons]);
   }
+
+  function updateSpaceUI() {
+    usingCenterUI.space = new ButtonElement({
+      name: 'space',
+      value: updateMessageText.slice(-1)+'_'
+    });
+  }
   function uiHandler(args:uiHandlerInterface) {
     const {rawId, layer, options: { click = false, select = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
@@ -215,22 +225,23 @@ const Home = () => {
           }
         }
         if(optCheckResult.length) {/**optを優先の為space&del無効化 */
-          usingCenterUI.space = new ButtonElement({
-            name: '',
-            value: ''
-          });
-          usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+          if(UI_MODE === 0) {
+            usingCenterUI.space = new ButtonElement({
+              name: '',
+              value: ''
+            });
+
+            if(!enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
+              usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+            }
+          } else {
+            updateSpaceUI();
+          }
         } else {
-          usingCenterUI.space = new ButtonElement({
-            name: 'space',
-            value: updateMessageText.slice(-1)+'_'
-          });
+          updateSpaceUI();
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
 
-        if(enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
-          usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
-        }
         setUsingCenterUI({...usingCenterUI});
         //setActiveButtons([...activeButtons]);
         break;
@@ -261,32 +272,37 @@ const Home = () => {
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
-        if(!(click || select))break;
         updateMessageText = messageText+inputElm.displayName;
 
         optCheckResult = optionableChecker(
           inputElm.value,
           inputElm.displayName,
         );
+//        updateMessageText = messageText+;
 
         if(optCheckResult.length) {/**optを優先の為space&del無効化 */
-          usingCenterUI.space = new ButtonElement({
-            name: '',
-            value: ''
-          });
-          if(optCheckResult.length >= 2)usingCenterUI.delete = new ButtonElement({name: '', value: ''});
-
           releaseUiOverLayer(3);
           usingUI[3].from = 2 * id;
           usingUI[3].to = usingUI[3].from + optCheckResult.length;
-          optCheckResult.forEach(opt=> {
 
-          })
+          if(!(click || select))break;
+          //updateMessageText = messageText+inputElm.displayName;
+          if(UI_MODE === 0) {
+            usingCenterUI.space = new ButtonElement({
+              name: '',
+              value: ''
+            })  ;
+            if(optCheckResult.length >= 2)usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+          } else {
+            updateSpaceUI();
+          }
         } else {
-          resetCenterUI("message-control");
 
+          if(!(click || select))break;
+          if(UI_MODE === 0)resetCenterUI("message-control");
 
         }
+
         setUsingCenterUI({...usingCenterUI});
         setUsingUI([...usingUI]);
         break;
@@ -296,6 +312,8 @@ const Home = () => {
           if(inputElm.displayName.length > 0) {
             const deleted = messageText.slice(-1);
             updateMessageText = messageText.slice(0,-1)+inputElm.value;
+
+            updateSpaceUI();
           }
         }
         setActiveButtons([...activeButtons]);
@@ -530,7 +548,7 @@ const Home = () => {
         style={{pointerEvents:'none'}}
       ><text
         x={`${tx}`} y={`${ty}`}
-        fontSize={`${rescaledFontSize*0.75}`} stroke="green" fill="white"
+        fontSize={`${rescaledFontSize*0.75*8*fontMagnification[layer]}%`} stroke="green" fill="white"
         textAnchor="middle" strokeWidth={rescaledStrokeWeight}
         dominantBaseline="middle"
       >
