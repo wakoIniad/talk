@@ -58,7 +58,7 @@ const pallet2 = [
 ];
 
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
-const UI_TEXT_POS = [ 1, 1.25, 0.8, 1 ]
+const UI_TEXT_POS = [ 1, 1, 1, 1 ]
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -159,7 +159,6 @@ const Home = () => {
   function uiHandler(args:uiHandlerInterface) {
     const {rawId, layer, options: { click = false, select = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
-    if(click || select)console.log(id, rawId, layer, usingUI[layer]);
     const inputElm = getUiElementFromLayer(layer,rawId);
 
     updateMessageText = messageText;
@@ -453,9 +452,16 @@ const Home = () => {
         </clipPath>
       </svg> : '';
 
-    const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
-    const ty = minorAdjuster(my.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
-
+    //const ringWeight = (UI_RING_WEIGHT_EACH_LAYER[layer][1]-UI_RING_WEIGHT_EACH_LAYER[layer][0])/
+    //UI_RING_WEIGHT_EACH_LAYER[layer][0];
+    const tx = minorAdjuster(mx.raw,
+      ringInnerRadius+(1-ringInnerRadius)*0.5*UI_TEXT_POS[layer],
+      0.5
+    );
+    const ty = minorAdjuster(my.raw,
+      ringInnerRadius+(1-ringInnerRadius)*0.5*UI_TEXT_POS[layer],
+      0.5
+    );
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -465,7 +471,7 @@ const Home = () => {
         style={{pointerEvents:'none'}}
       ><text
         x={`${tx}`} y={`${ty}`}
-        fontSize={rescaledFontSize*0.75} stroke="green" fill="white"
+        fontSize={`${rescaledFontSize*0.75}`} stroke="green" fill="white"
         textAnchor="middle" strokeWidth={rescaledStrokeWeight}
         dominantBaseline="middle"
       >
