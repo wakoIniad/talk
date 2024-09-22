@@ -58,7 +58,7 @@ const pallet2 = [
 ];
 
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
-const UI_TEXT_POS = [ 1, 1, 1, 1 ]
+const UI_TEXT_POS = [ 1, 1, 1.5, 1 ]
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -159,6 +159,7 @@ const Home = () => {
   function uiHandler(args:uiHandlerInterface) {
     const {rawId, layer, options: { click = false, select = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
+    if(click || select)console.log(id, rawId, layer, usingUI[layer]);
     const inputElm = getUiElementFromLayer(layer,rawId);
 
     updateMessageText = messageText;
@@ -521,11 +522,11 @@ const Home = () => {
 
   function idToRawId(id: number, layer: number) {
     const offset = usingUI[layer].from;
-    const OPEN_INDEX_DIRECTION = Math.max(offset/((offset**2)**0.5)||0, 0);
+    //const OPEN_INDEX_DIRECTION = Math.max(offset/((offset**2)**0.5)||0, 0);
     const len = uiDivisionCounts[Number(layer)];
-    const lenWithSign = OPEN_INDEX_DIRECTION * len;
+    //const lenWithSign = OPEN_INDEX_DIRECTION * len;
     return new RawId(
-          (Number(id)-offset-lenWithSign)%len+offset+lenWithSign
+          (Number(id)+(20-offset))%len+offset
     );
   }
 
