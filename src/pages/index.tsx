@@ -41,7 +41,7 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
-const uiDivisionCounts = [ 2, 10, 30-5, 50 ];
+const uiDivisionCounts = [ 2, 10, 20, 40 ];
 
 const usingUiInitial = [
   {from: 0, to: 2},
@@ -95,12 +95,11 @@ const Home = () => {
   const touchedId = useRef([-1,-1]);
   const uiGenerated = useRef(false);
   const touchPos = useRef<number[]>([-1,-1]);
+  const firstTouch = useRef(true);
   let updateMessageText:string = messageText;
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
   //console.log(LineTextParser(messageText));
-  /*const [usingUIExtension, setUsingUIExtension] = useState(new ButtonLayers());
-  console.log(messageText);*/
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
@@ -133,15 +132,15 @@ const Home = () => {
     console.info(res);
   }
 
-  let optCheckResult:boolean = false;
+  let optCheckResult:number = 0;
   function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
-    //console.log("Item was touched",new Date());
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
     if(touchedId.current.join(",") !== thisTouchId.join(",")) {
-      uiClicked(args);
+      firstTouch.current = false;
     }
     uiClicked(args);
+    //uiClicked(args);
     //uiClicked(args);
     console.log("touchMOVE")
     touchedId.current = thisTouchId;
@@ -160,6 +159,7 @@ const Home = () => {
   function uiHandler(args:uiHandlerInterface) {
     const {rawId, layer, options: { click = false, select = false } = {}} = args;
     const id = loopIndex(uiDivisionCounts[layer], rawId);
+    if(click || select)console.log(id, rawId, layer, usingUI[layer]);
     const inputElm = getUiElementFromLayer(layer,rawId);
 
     updateMessageText = messageText;
@@ -168,6 +168,10 @@ const Home = () => {
       case 0:
         if(!click) break;
         usingUI[2].to = usingUI[2].from;
+
+        activeButtons[1] = -1;
+        activeButtons[2] = -1;
+
         setUsingUI([...usingUI]);
         let enableDelete = false;
 
@@ -212,6 +216,7 @@ const Home = () => {
           usingCenterUI.delete = new ButtonElement({name: 'delete', value: ''});
         }
         setUsingCenterUI({...usingCenterUI});
+        setActiveButtons([...activeButtons]);
         break;
       case 1:
         if( activeButtons[1] === id && click) {
@@ -222,8 +227,10 @@ const Home = () => {
           usingUI[2].to = usingUI[2].from;
 
           resetCenterUI("message-control");
-        } else {
-          usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 1);
+        } else if(click || select || activeButtons[1] === -1){
+
+          resetCenterUI("message-control");
+          usingUI[2].from = Math.round((uiDivisionCounts[2]/uiDivisionCounts[1]) * id - 2);
           usingUI[2].to = usingUI[2].from+5;
           activeButtons[1] = id;
           activeButtons[2] = -1;
@@ -233,7 +240,6 @@ const Home = () => {
         setActiveButtons([...activeButtons]);
         break;
       case 2:
-
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
@@ -250,7 +256,7 @@ const Home = () => {
             name: '',
             value: ''
           });
-          usingCenterUI.delete = new ButtonElement({name: '', value: ''});
+          if(optCheckResult >= 2)usingCenterUI.delete = new ButtonElement({name: '', value: ''});
         } else {
           resetCenterUI("message-control");
 
@@ -293,6 +299,7 @@ const Home = () => {
     const exclude = options?.exclude || [];
     const [ consonant, vowel ] = romaji.split('');
     let optionIsAvaliable = false;
+    let activeFlagCout = 0;
     if(['t','k','s','h'].includes(consonant) && !exclude.includes('dakuten')) {
       const display = [hiragana, DAKUTEN_UNICODE].join("");
       usingCenterUI.dakuten = new ButtonElement({
@@ -300,6 +307,7 @@ const Home = () => {
         value: display,
       });
       optionIsAvaliable = true;
+      activeFlagCout ++;
     }
     if(['h'].includes(consonant) && !exclude.includes('handakuten')) {
       const display =  [hiragana, HANDAKUTEN_UNICODE].join("");
@@ -308,6 +316,7 @@ const Home = () => {
         value: display,
       });
       optionIsAvaliable = true;
+      activeFlagCout ++;
     }
     if(['t','y'].includes(consonant) && !exclude.includes('small')) {
       let flag = false;
@@ -323,11 +332,12 @@ const Home = () => {
           name: 'small',
           value: Hiraganizer(value),
         });
+        optionIsAvaliable = true;
+        activeFlagCout ++;
       }
-      optionIsAvaliable = true;
     }
 
-    return optionIsAvaliable;
+    return activeFlagCout;
   }
 
   interface makeButtonInterFace {
@@ -344,13 +354,23 @@ const Home = () => {
     switch(layer) {
       case 0:
         const usableOptions:Array<string> = [];
-        ['dakuten','handakuten','small','delete','space'].forEach(key=> {
+        ['delete','dakuten','handakuten','small','space'].forEach(key=> {
           if(usingCenterUI[key].displayName.length > 0) {
             usableOptions.push(key);
           }
         });
         const key = usableOptions[id];
-        if(key) return usingCenterUI[key];
+        if(key) {
+          const btnUI = usingCenterUI[key];
+          btnUI.color = {
+            "delete":"rgb(0,0,0)",
+            "dakuten":"rgb(200,0,100)",
+            "handakuten":"rgb(0,0,255)",
+            "space":"rgb(255,255,255)",
+            "small":"rgb(255,255,0)",
+          }[key];
+          return btnUI;
+        };
         break;
       case 1:
         return LayerArray[id];
@@ -435,6 +455,7 @@ const Home = () => {
 
     const tx = minorAdjuster(mx.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
     const ty = minorAdjuster(my.raw, 1-rescaledFontSize*UI_TEXT_POS[layer], 0.5);
+
     const svg2 =
       using? <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -448,7 +469,7 @@ const Home = () => {
         textAnchor="middle" strokeWidth={rescaledStrokeWeight}
         dominantBaseline="middle"
       >
-        {getDisplayName(layer,getUiElementFromLayer(layer,rawId).displayName)}
+        {getDisplayName(layer, getUiElementFromLayer(layer,rawId).displayName)}
       </text>
     </svg>: '';
 
@@ -457,7 +478,10 @@ const Home = () => {
     //styleSettings.backgroundImage = `url(#btn_visual_${layer}_${id})`;
     styleSettings.clipPath = `url(#btn_clip_${layer}_${id})`;
     if(!styleSettings.opacity)styleSettings.opacity = activation_flag;
-
+    const btnUI = getUiElementFromLayer(layer,rawId);
+    if(btnUI.color) {
+      styleSettings.background = btnUI.color;
+    }
   }
 
   const button =
@@ -491,7 +515,10 @@ const Home = () => {
 
   function idToRawId(id: number, layer: number) {
     const offset = usingUI[layer].from;
-    return new RawId((Number(id)-offset)%uiDivisionCounts[Number(layer)]+offset)
+    const OPEN_INDEX_DIRECTION = +1;//<発見>これの正負でループが発生する方向が変わる！！
+    return new RawId(
+      (Number(id)+offset*OPEN_INDEX_DIRECTION)%
+      uiDivisionCounts[Number(layer)]-offset*OPEN_INDEX_DIRECTION);
   }
 
   const CustomButton = ({ children, layer, rawId, style, ...props }
@@ -502,6 +529,7 @@ const Home = () => {
         const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
         if(etype === "end") {
           touchPos.current = [-1,-1];
+          firstTouch.current = true;
         }
         if(element instanceof HTMLElement) {
           const elementId = element.getAttribute('id');
@@ -510,7 +538,7 @@ const Home = () => {
             uiTouched({
               rawId: idToRawId(Number(elmId),Number(elmLayer)),
               layer: Number(elmLayer), options: {
-                click: etype === "start",
+                click: etype === "start" || firstTouch.current,
                 select: etype === "end",
               }
             })
@@ -615,11 +643,12 @@ const Home = () => {
 //                      config.styleSettings.zIndex = 5;
                       const palletIndex = j-using.from;
                       config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
-                      config.styleSettings.background =
-                      makeGradationBG(pallet[palletIndex],i);
                       if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
                         config.styleSettings.background = 'rgba(220,220,220,1)';
                         config.styleSettings.borderColor = pallet[palletIndex];
+                      } else {
+                        config.styleSettings.background =
+                          makeGradationBG(pallet[palletIndex],i);
                       }
                     }
                     break;

@@ -2,16 +2,20 @@ export class ButtonElement {
   public displayName: string;
   value: any;
   children?: ButtonLayers;
-  constructor({name = '', value = null, children}:Partial<ButtonLayersSetting> ) {
+  public color?: string;
+  constructor({name = '', value = null, children, color}:Partial<ButtonLayersSetting> ) {
     this.displayName = name;
     this.value = value;
     this.children = children;
+    this.color = color;
   }
 }
 interface ButtonLayersSetting {
   name: string;
   value: any;
   children?: ButtonLayers;
+
+  color?: string
 }
 export class ButtonLayers extends Array{
   public elements: Array<ButtonElement>;
