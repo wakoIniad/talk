@@ -142,15 +142,16 @@ const Home = () => {
   function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
-    const same = touchedId.current.join(",") !== thisTouchId.join(",");
-    if(same) {
+    const same = touchedId.current.join(",") === thisTouchId.join(",");
+    if(!same) {
       firstTouch.current = false;
     }
+    if(!args.options)args.options = {};
     args.options.same = same;
     uiClicked(args);
     //uiClicked(args);
     //uiClicked(args);
-    console.log("touchMOVE")
+    console.log("touchMOVE");
     touchedId.current = thisTouchId;
   }
   function uiClicked(args:uiHandlerInterface) {
@@ -165,7 +166,7 @@ const Home = () => {
       same?: boolean,
     }
   }
-  function releaseUiOverLayer(layer: number) {
+  function releaseUiLayerOver(layer: number) {
     const FIXED_LAYER = [0,1];
     for(let i = layer|1;i < usingUI.length;i++) {
       if(FIXED_LAYER.includes(i))continue;
@@ -195,7 +196,7 @@ const Home = () => {
     switch(layer) {
       case 0:
         if(!click) break;
-        releaseUiOverLayer(1);
+        releaseUiLayerOver(1);
         //usingUI[2].to = usingUI[2].from;
 
         //activeButtons[1] = -1;
@@ -255,7 +256,7 @@ const Home = () => {
           activeButtons[2] = -1;
 
           usingUI[2].to = usingUI[2].from;*/
-          releaseUiOverLayer(1);
+          releaseUiLayerOver(1);
 
           resetCenterUI("message-control");
         } else if(click || select || activeButtons[1] === -1){
@@ -265,14 +266,15 @@ const Home = () => {
           usingUI[2].to = usingUI[2].from+5;
           activeButtons[1] = id;
           //activeButtons[2] = -1;
-          releaseUiOverLayer(2.5);
+          releaseUiLayerOver(2.5);
         }
 
         setUsingUI([...usingUI]);
         setActiveButtons([...activeButtons]);
         break;
       case 2:
-        if(same&&!(click||select))break;
+        //if(same&&!(click||select))break;
+        console.log(same,click,select);
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
@@ -285,9 +287,14 @@ const Home = () => {
 //        updateMessageText = messageText+;
 
         if(optCheckResult.length) {/**optを優先の為space&del無効化 */
-          releaseUiOverLayer(3);
+          if(activeButtons[3] !== -1)releaseUiLayerOver(3);
           usingUI[3].from = 2 * id;
           usingUI[3].to = usingUI[3].from + optCheckResult.length;
+          if(!(click||select)) {
+            for(let key of optCheckResult) {
+              usingCenterUI[key].value = messageText.slice(-1) + usingCenterUI[key].value
+            }
+          }
 
 //          if(!(click || select))break;
           //updateMessageText = messageText+inputElm.displayName;
@@ -295,7 +302,7 @@ const Home = () => {
             usingCenterUI.space = new ButtonElement({
               name: '',
               value: ''
-            })  ;
+            });
             if(optCheckResult.length >= 2)usingCenterUI.delete = new ButtonElement({name: '', value: ''});
           } else {
             updateSpaceUI();
