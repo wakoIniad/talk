@@ -1,7 +1,7 @@
 import axios, { AxiosError }  from "axios";
 import { NextRequest, NextResponse, } from "next/server";
 
-const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
+const LINE_ACCESS_TOKENS = [ process.env.LINE_ACCESS_TOKEN1, process.env.LINE_ACCESS_TOKEN2 ];
 export function GET(request: NextRequest): NextResponse {
   // GET /api/users リクエストの処理
   const params = request.nextUrl.searchParams;
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const config = {
     'headers': {
-      'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN,
+      'Authorization': 'Bearer ' + LINE_ACCESS_TOKENS[params.id],
       'Content-Type': 'application/x-www-form-urlencoded',
     }
   };

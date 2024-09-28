@@ -1,4 +1,6 @@
+
 /** @type {import('next').NextConfig} */
+const path = require('path');
 module.exports = {
   reactStrictMode: true,
   basePath:
@@ -10,4 +12,11 @@ module.exports = {
   trailingSlash: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  webpack: config => {
+    config.resolve.alias["@"] = path.join(__dirname, "src");
+    config.resolve.alias["~"] = path.join(__dirname, "src");
+    config.resolve.alias["@api"] = path.join(__dirname, "src/app/api");
+    config.resolve.alias["~api"] = path.join(__dirname, "src/app/api");
+    return config;
+  },
 };

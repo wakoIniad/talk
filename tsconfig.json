@@ -23,6 +23,12 @@
     ".next/types/**/*.ts",
     "*.js",
     ".eslintrc.js"
-  ],
+, "src/test.js"  ],
   "exclude": ["node_modules"],
+  "baseUrl": "./",
+  "paths": {
+    "@/*": ["./src/*"],
+//    "@components/*": ["./components/*"],
+    "@api/*": ["./src/app/api/*"],
+  }
 }

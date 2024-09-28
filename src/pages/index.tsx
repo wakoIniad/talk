@@ -16,6 +16,8 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 import localfont from "next/font/local";
 import { exitCode, off } from 'process';
 
+const LINE_TARGET_NICKNAMES = [ "和田家", "友達" ]
+
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
 const HANDAKUTEN_UNICODE:string = "\u{309A}"; //半濁点
@@ -45,6 +47,9 @@ const UI_BORDER_WEIGHT = 20;//px
 const UI_FONT_SIZE = 85;//px UI_FONT_SIZE(px) = 1em
 const UI_STROKE_WEIGHT = 3;
 
+const LINE_TARGETS_COUNT = 2;
+
+
 const uiDivisionCounts = [ 2, 10, 20, 40 ];
 
 const usingUiInitial = [
@@ -64,7 +69,6 @@ const pallet = [
 const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
-
 
 const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -95,6 +99,7 @@ function LineTextParser(text:string) {
 }
 
 const Home = () => {
+  const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
@@ -130,7 +135,7 @@ const Home = () => {
     const config = {
       'method' : 'post',
       'headers': { "Content-Type": "application/json" },
-      'body': JSON.stringify({ 'message': LineTextParser(message) }),
+      'body': JSON.stringify({ 'message': LineTextParser(message),'target': lineTargetId }),
     };
     const res = await fetch('/api/line',config)
     setMssageText("");
@@ -697,12 +702,20 @@ const Home = () => {
     ).join(",");
     return result;
   }
+  function changeLineTarget() {
+    if(LINE_TARGETS_COUNT === 1 + lineTargetId) {
+      setLineTargetId(0);
+    } else {
+      setLineTargetId(1 + lineTargetId);
+    }
+  }
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {messageText}
         </span>
+        <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
       </div>
       <div className={styles.my_note}>
