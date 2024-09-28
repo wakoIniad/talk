@@ -30,6 +30,8 @@
   align-items: center;
 
   font-family:"UD デジタル 教科書体 N-R", "BIZ UDゴシック Regular", "Hiragino Kaku Gothic ProN", "ascii";
+
+  touch-action: none;
 }
 
 .input_ui_container {
