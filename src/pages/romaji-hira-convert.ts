@@ -55,6 +55,33 @@ export default (input: string) => {
 			offset += 1
 			continue
 		}
+		switch( pending ) {//記号 (追加)
+			case '-':
+				result += 'ー';
+				pending = '';
+				state = romaji_hira;
+				continue
+			case '?':
+				result += "？";
+				pending = '';
+				state = romaji_hira;
+				continue
+			case '!':
+				result += "！";
+				pending = '';
+				state = romaji_hira;
+				continue
+			case ',':
+				result += "、";
+				pending = '';
+				state = romaji_hira;
+				continue
+			case '.':
+				result += "。";
+				pending = '';
+				state = romaji_hira;
+				continue
+		}
 		// 該当なし
 		result += pending
 		pending = ''

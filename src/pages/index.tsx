@@ -70,7 +70,7 @@ const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
 
-const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
+const LayerArray = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
     .map(vowel=>
       new ButtonElement({name: Hiraganizer(consonant+vowel), value: consonant+vowel}))
@@ -79,6 +79,18 @@ const LayerArray = new ButtonLayers(...['', ...'kstnhmyrw'.split('')]
     value: null,
     children: new ButtonLayers(...hiraganaList)
   })));
+LayerArray[7] = new ButtonElement({
+    name: 'や+', value: null,
+    children: new ButtonLayers(
+      ...'ya|yu|yo|,|.'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
+    ))
+  })
+LayerArray.push(new ButtonElement({
+  name: 'わ+', value: null,
+  children: new ButtonLayers(
+    ...'wa|wo|nn|?|!|-'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
+  ))
+}))
 
 function loopIndex( length: number, raw: RawId ):number {
   return (length + raw.parse())%length;
@@ -712,10 +724,10 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
+        <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {messageText}
         </span>
-        <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
       </div>
       <div className={styles.my_note}>
