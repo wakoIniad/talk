@@ -12,11 +12,9 @@ export function GET(request: NextRequest): NextResponse {
     { status: 200 },
   );
 }
-
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // POST /api/users リクエストの処理
   const params = await request.json();
-
   const config = {
     'headers': {
       'Authorization': 'Bearer ' + LINE_ACCESS_TOKENS[params.target],
@@ -36,7 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch(e) {
     if (axios.isAxiosError(e)) {
       console.error('外部API呼び出しエラー',e);
-      console.log(params,LINE_ACCESS_TOKEN);
+      console.log(params,LINE_ACCESS_TOKENS);
       return NextResponse.json(
         { response: "error" },
         { status: 502 },
