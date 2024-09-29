@@ -19,7 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const config = {
     'headers': {
-      'Authorization': 'Bearer ' + LINE_ACCESS_TOKENS[params.id],
+      'Authorization': 'Bearer ' + LINE_ACCESS_TOKENS[params.target],
       'Content-Type': 'application/x-www-form-urlencoded',
     }
   };

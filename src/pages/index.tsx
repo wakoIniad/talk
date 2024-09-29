@@ -731,7 +731,10 @@ const Home = () => {
         <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
       </div>
       <div className={styles.my_note}>
-        ここに、単語登録機能・単語カード機能・メモ機能などを入れる予定。
+        ※作り途中。このボタンは使えない
+        <button className={styles.right_ui_buttons}>ひらがな</button>
+        <button className={styles.right_ui_buttons}>数字</button>
+        <button className={styles.right_ui_buttons}>登録単語</button>
       </div>
       <div className={styles.input_ui_container}>
         {
