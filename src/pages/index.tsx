@@ -88,7 +88,7 @@ LayerArray[7] = new ButtonElement({
 LayerArray.push(new ButtonElement({
   name: 'わ+', value: null,
   children: new ButtonLayers(
-    ...'wa|wo|nn|?|!|-'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
+    ...'wa|wo|nn|-|?|!'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
   ))
 }))
 
