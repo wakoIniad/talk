@@ -156,7 +156,13 @@ const Home = () => {
   }
 
   let optCheckResult:string[] = [];
+  let lastTouchedTime:number = -1;
   function uiTouched(args:uiHandlerInterface) {
+    const now = Date.now();
+    if(lastTouchedTime !== -1 && now - lastTouchedTime < 200) {
+      return;
+    }
+    lastTouchedTime = now;
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
     const same = touchedId.current.join(",") === thisTouchId.join(",");
@@ -735,6 +741,7 @@ const Home = () => {
         <button className={styles.right_ui_buttons}>ひらがな</button>
         <button className={styles.right_ui_buttons}>数字</button>
         <button className={styles.right_ui_buttons}>登録単語</button>
+        <button className={styles.right_ui_buttons}>AI自動文字変換</button>
       </div>
       <div className={styles.input_ui_container}>
         {
