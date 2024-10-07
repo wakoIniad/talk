@@ -65,6 +65,9 @@ const usingUiInitial = [
   {from: 0, to: 0},
 ];
 
+const outputLayer = [2,1]
+const decorationLayer = [3,-1]
+
 const fontMagnification = [ 1, 1, 1, 0.5 ];
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
 const UI_TEXT_POS = [ 1, 1.25, 1.4, 1.9 ]
@@ -76,7 +79,7 @@ const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
 ];
 
-const LayerArray = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
+const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
     .map(vowel=>
       new ButtonElement({name: Hiraganizer(consonant+vowel), value: consonant+vowel}))
@@ -85,18 +88,24 @@ const LayerArray = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
     value: null,
     children: new ButtonLayers(...hiraganaList)
   })));
-LayerArray[7] = new ButtonElement({
+LayerArray_hiragana[7] = new ButtonElement({
     name: 'や+', value: null,
     children: new ButtonLayers(
       ...'ya|yu|yo|,|.'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
     ))
   })
-LayerArray.push(new ButtonElement({
+LayerArray_hiragana.push(new ButtonElement({
   name: 'わ+', value: null,
   children: new ButtonLayers(
     ...'wa|wo|nn|-|?|!'.split('|').map(h=>new ButtonElement({name:Hiraganizer(h), value: h})
   ))
 }))
+
+const LayerArray_numbers = new ButtonLayers(...'0123456789'.split('').map(n=>
+  new ButtonElement({name: n, value: n})
+));
+
+const uiInputSets = [LayerArray_hiragana,LayerArray_numbers]
 
 function loopIndex( length: number, raw: RawId ):number {
   return (length + raw.parse())%length;
@@ -126,10 +135,14 @@ const Home = () => {
   const touchPos = useRef<number[]>([-1,-1]);
   const firstTouch = useRef(true);
   const containerRef = useRef(null!);
+  const [uiInputMode, setUiInputMode] = useState(0);
   let updateMessageText:string = messageText;
+
+  const LayerArray = uiInputSets[uiInputMode]
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
   //console.log(LineTextParser(messageText));
+  const nowOutputLayer = outputLayer[uiInputMode];
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
@@ -222,7 +235,6 @@ const Home = () => {
     const inputElm = getUiElementFromLayer(layer,rawId);
 
     updateMessageText = messageText;
-
     switch(layer) {
       case 0:
         if(!click) break;
@@ -280,6 +292,9 @@ const Home = () => {
         //setActiveButtons([...activeButtons]);
         break;
       case 1:
+        if(nowOutputLayer === 1) {
+          updateMessageText = messageText+inputElm.displayName;
+        } else
         if( activeButtons[1] === id && click) {
 
           /*activeButtons[1] = -1;
@@ -746,6 +761,10 @@ const Home = () => {
     }
 
   }
+
+  function uiInputModeSetter(mode: number) {
+    setUiInputMode(mode)
+  }
   return (
     <div className={styles.container} onClick={requestFullscreen} ref={containerRef}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
@@ -757,9 +776,9 @@ const Home = () => {
       </div>
       <div className={styles.my_note}>
         ※作り途中。このボタンは使えない
-        <button className={styles.right_ui_buttons}>ひらがな</button>
-        <button className={styles.right_ui_buttons}>数字</button>
-        <button className={styles.right_ui_buttons}>登録単語</button>
+        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
+        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
+        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
         <button className={styles.right_ui_buttons}>AI自動文字変換</button>
       </div>
       <div className={styles.input_ui_container}>
