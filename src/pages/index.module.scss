@@ -213,3 +213,16 @@
   margin: auto;
   pointer-events:auto;
 }
+
+.cursor_ui_buttons {
+  display: inline-block;
+  width: 50%;
+  height: 4em;
+}
+
+.left_bottom_ui_container {
+  position: absolute;
+  width: 100%;
+  height: 3em;
+  bottom: 0;
+}

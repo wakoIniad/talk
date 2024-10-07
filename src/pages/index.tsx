@@ -772,7 +772,12 @@ const Home = () => {
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {messageText}
         </span>
-        <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
+        <div className={styles.left_bottom_ui_container}>
+          <button className={styles.cursor_ui_buttons}>←</button>
+          <button className={styles.cursor_ui_buttons}>→</button>
+          <br/>
+          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
+        </div>
       </div>
       <div className={styles.my_note}>
         ※作り途中。このボタンは使えない
