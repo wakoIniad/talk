@@ -1,3 +1,9 @@
+/**todo:
+ * タッチ範囲でかくする
+ * 文字にカーソル合わせられるようにする
+ *
+ */
+
 const UI_MODE:number = 1;
 
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
@@ -119,6 +125,7 @@ const Home = () => {
   const uiGenerated = useRef(false);
   const touchPos = useRef<number[]>([-1,-1]);
   const firstTouch = useRef(true);
+  const containerRef = useRef(null!);
   let updateMessageText:string = messageText;
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
@@ -409,8 +416,11 @@ const Home = () => {
       activeFlagCout ++;
       useOpt.push("handakuten");
     }
-    if(['t','y'].includes(consonant) && !exclude.includes('small')) {
+    if((['t','y','a'].includes(consonant) || ['a','i','u','e','o'].includes(consonant)) && !exclude.includes('small')) {
       let flag = false;
+      if(['a','i','u','e','o'].includes(consonant)) {
+        flag = true
+      }
       if('t' === consonant && 'u' === vowel) {
         flag = true;
       }
@@ -727,8 +737,17 @@ const Home = () => {
       setLineTargetId(1 + lineTargetId);
     }
   }
+  function requestFullscreen(e: any) {    // 全画面表示をリクエストするメソッドを取得
+    if(document.fullscreenElement)return;
+    e = containerRef.current
+    const method = e.requestFullscreen || e.webkitRequestFullscreen || e.mozRequestFullScreen || e.msRequestFullscreen;
+    if (method) {
+      method.call(e); // 全画面表示をリクエスト
+    }
+
+  }
   return (
-    <div className={styles.container}>
+    <div className={styles.container} onClick={requestFullscreen} ref={containerRef}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
