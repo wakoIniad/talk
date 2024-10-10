@@ -125,17 +125,20 @@ function LineTextParser(text:string) {
   return text;
 }
 
+
 const Home = () => {
   const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
+  const [afterMessageText, setAfterMssageText] = useState('');
   const touchedId = useRef([-1,-1]);
   const uiGenerated = useRef(false);
   const touchPos = useRef<number[]>([-1,-1]);
   const firstTouch = useRef(true);
   const containerRef = useRef(null!);
   const [uiInputMode, setUiInputMode] = useState(0);
+  const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
   let updateMessageText:string = messageText;
 
   const LayerArray = uiInputSets[uiInputMode]
@@ -147,6 +150,11 @@ const Home = () => {
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
+
+
+  function insertChar(c: string,text: string = messageText , at: number = cursorPosition) {
+    return text.slice(0, -at-1) + c + text.slice(-at-1, -1)
+  }
   function makeUsingUIElement(consonant:string, Vowel:string, displayName?: string) {
     const hiraganaList = Vowel.split('')
     .map(vowel=> new ButtonElement({
@@ -294,6 +302,8 @@ const Home = () => {
       case 1:
         if(nowOutputLayer === 1) {
           updateMessageText = messageText+inputElm.displayName;
+//          updateMessageText =  insertChar(inputElm.displayName.repeat(2),messageText, cursorPosition)
+          //console.log(11,updateMessageText)
         } else
         if( activeButtons[1] === id && click) {
 
@@ -324,6 +334,9 @@ const Home = () => {
         setActiveButtons([...activeButtons]);
 
         updateMessageText = messageText+inputElm.displayName;
+
+        //updateMessageText =  insertChar(inputElm.displayName.repeat(2),messageText, cursorPosition)
+          //console.log(22,updateMessageText)
 
         optCheckResult = optionableChecker(
           inputElm.value,
@@ -765,16 +778,32 @@ const Home = () => {
   function uiInputModeSetter(mode: number) {
     setUiInputMode(mode)
   }
+
+  function moveCursorPositionTo(d: number) {
+    //setMssageText(messageText);
+    //setAfterMssageText(afterMessageText);
+    //return text.slice(0, -at-1) + c + text.slice(-at-1, -1)
+    const fullText = messageText + afterMessageText;
+    const nextCursorPosition = cursorPosition-d;
+    const l = fullText.length+1;
+    const cursor = (l+(nextCursorPosition%l))%l;
+    const firstHalf = fullText.slice(0,fullText.length-cursor);
+    const lastHalf = fullText.slice(fullText.length-cursor);
+    setCursorPosition(cursor);
+    setMssageText(firstHalf);
+    setAfterMssageText(lastHalf);
+
+  }
   return (
     <div className={styles.container} onClick={requestFullscreen} ref={containerRef}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
-            {messageText}
+            {messageText+'|'+afterMessageText}
         </span>
         <div className={styles.left_bottom_ui_container}>
-          <button className={styles.cursor_ui_buttons}>←</button>
-          <button className={styles.cursor_ui_buttons}>→</button>
+          <button className={styles.cursor_ui_buttons} onClick={()=>moveCursorPositionTo(-1)}>←</button>
+          <button className={styles.cursor_ui_buttons} onClick={()=>moveCursorPositionTo(1)}>→</button>
           <br/>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
