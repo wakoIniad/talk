@@ -140,6 +140,7 @@ const Home = () => {
   const [uiInputMode, setUiInputMode] = useState(0);
   const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
   let updateMessageText:string = messageText;
+  const lastClickId = useRef([-1,-1]);
 
   const LayerArray = uiInputSets[uiInputMode]
 
@@ -184,13 +185,8 @@ const Home = () => {
   }
 
   let optCheckResult:string[] = [];
-  let lastTouchedTime:number = -1;
+  let lastTouchedTime = useRef<number>(-1);
   function uiTouched(args:uiHandlerInterface) {
-    const now = Date.now();
-    if(lastTouchedTime !== -1 && now - lastTouchedTime < 200) {
-      return;
-    }
-    lastTouchedTime = now;
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
     const same = touchedId.current.join(",") === thisTouchId.join(",");
@@ -199,13 +195,23 @@ const Home = () => {
     }
     if(!args.options)args.options = {};
     args.options.same = same;
-    uiClicked(args);
+    uiClicked(args, true);
     //uiClicked(args);
     //uiClicked(args);
     console.log("touchMOVE");
     touchedId.current = thisTouchId;
   }
-  function uiClicked(args:uiHandlerInterface) {
+  function uiClicked(args:uiHandlerInterface, touch?: boolean) {
+    if( !touch ) {
+      const {rawId, layer} = args;
+      const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
+      const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
+      if(!args.options)args.options = {};
+      args.options.sameClick = sameClick;
+
+      lastClickId.current = thisClickId;
+      console.log(sameClick)
+    }
     uiHandler(args);
   }
 
@@ -215,6 +221,7 @@ const Home = () => {
       click?: boolean,
       select?: boolean,
       same?: boolean,
+      sameClick?: boolean,
     }
   }
   function releaseUiLayerOver(layer: number) {
@@ -237,7 +244,17 @@ const Home = () => {
     });
   }
   function uiHandler(args:uiHandlerInterface) {
-    const {rawId, layer, options: { click = false, select = false, same = false } = {}} = args;
+
+    const {rawId, layer, options: { click = false, select = false, same = false, sameClick = false } = {}} = args;
+
+
+    const now = Date.now();
+    if(lastTouchedTime.current !== -1 && now - lastTouchedTime.current < 200 && sameClick) {
+      return;
+    }
+    lastTouchedTime.current = now;
+
+
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     if(click || select)console.log(id, rawId, layer, usingUI[layer]);
     const inputElm = getUiElementFromLayer(layer,rawId);
