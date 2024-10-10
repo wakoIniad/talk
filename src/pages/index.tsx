@@ -507,7 +507,7 @@ const Home = () => {
       case 2:
         const rootId = activeButtons[1];
         const arcId = rawId.parse() - usingUI[2].from;
-        return LayerArray[rootId].children[arcId];
+        return LayerArray[rootId]?LayerArray[rootId].children[arcId]:null;
       case 3:
         ['dakuten','handakuten','small'].forEach(key=> {
           if(usingCenterUI[key].displayName.length > 0) {
@@ -556,6 +556,7 @@ const Home = () => {
 
     const divisionCount = uiDivisionCounts[layer];
     const rawId = new RawId(id);
+
     id = loopIndex(divisionCount, rawId);
 
     const activation_flag = using ? 1: 0;
@@ -859,6 +860,8 @@ const Home = () => {
                       //config.styleSettings.zIndex = -1;
                     }
                 }
+
+                if(!getUiElementFromLayer(i,new RawId(j)))continue;
                 const { button, svg, svg2 } = makeButton(config);
                 buttons.push(button);
                 svgs.push(svg);
