@@ -176,7 +176,7 @@ const Home = () => {
     const config = {
       'method' : 'post',
       'headers': { "Content-Type": "application/json" },
-      'body': JSON.stringify({ 'message': LineTextParser(message),'target': lineTargetId }),
+      'body': JSON.stringify({ 'message': LineTextParser(message), 'target': lineTargetId }),
     };
     const res = await fetch('/api/line',config)
     setMssageText("");
@@ -794,6 +794,11 @@ const Home = () => {
   }
 
   function uiInputModeSetter(mode: number) {
+    if(mode >= 2) {
+      console.log('未実装です')
+      return;
+    }
+    releaseUiLayerOver(1)
     setUiInputMode(mode)
   }
 
@@ -812,12 +817,27 @@ const Home = () => {
     setAfterMssageText(lastHalf);
 
   }
+  function makeTextWrapper(text: string) {
+    return text.split('').map(c=> {
+      return <span style={{
+        position: 'relative',
+        width: '1em',
+        height: '1em',
+      }}>{c}<span style={{
+        width: '50%',
+        height: '100%'
+      }}></span><span style={{
+        width: '50%',
+        height: '100%'
+      }}></span></span>
+    })
+  }
   return (
     <div className={styles.container} onClick={requestFullscreen} ref={containerRef}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
-            {messageText+'|'+afterMessageText}
+            {makeTextWrapper(messageText+'|'+afterMessageText)}
         </span>
         <div className={styles.left_bottom_ui_container}>
           <button className={styles.cursor_ui_buttons} onClick={()=>moveCursorPositionTo(-1)}>←</button>
