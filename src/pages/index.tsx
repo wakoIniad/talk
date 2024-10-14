@@ -28,6 +28,7 @@ const LINE_TARGET_COLORS = [ "#89BDDE", "#f8b500" ]
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
 const HANDAKUTEN_UNICODE:string = "\u{309A}"; //半濁点
+const decoChars = [DAKUTEN_UNICODE, HANDAKUTEN_UNICODE];
 
 const ACTIVE_UI_BACKGROUND = 'rgba(220,220,220,1)';
 
@@ -410,6 +411,7 @@ const Home = () => {
     }
 
     setMssageText(updateMessageText);
+    console.log(updateMessageText)
   }
 
   function resetCenterUI(mode: string) {
@@ -834,10 +836,10 @@ const Home = () => {
     displayCursor(i-1, true, true);
   }
   function makeTextWrapper(text: string) {
-    return text.split('').map((c,i)=> {
+    return text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`)).map((c,i)=> {
       return <span style={{
         position: 'relative',
-        width: '1em',
+        width: 'fit-content',
         height: '1em',
         pointerEvents: 'auto',
       }}>{c}<span style={{
