@@ -23,6 +23,7 @@ import localfont from "next/font/local";
 import { exitCode, off } from 'process';
 
 const LINE_TARGET_NICKNAMES = [ "和田家", "友達" ]
+const LINE_TARGET_COLORS = [ "#89BDDE", "#f8b500" ]
 
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
 
@@ -855,7 +856,9 @@ const Home = () => {
   return (
     <div className={styles.container} onClick={requestFullscreen} ref={containerRef}>
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
-        <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
+        <button className={`${styles.line_change_target_btn}`}
+        style={{background: LINE_TARGET_COLORS[lineTargetId]}}
+        onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {makeTextWrapper(messageText+'|'+afterMessageText+'　'.repeat(16))}
         </span>
