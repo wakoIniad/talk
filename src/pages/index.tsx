@@ -127,6 +127,8 @@ function LineTextParser(text:string) {
 
 
 const Home = () => {
+  const [ _ , UpdateApp ] = useState([])
+
   const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
@@ -803,11 +805,15 @@ const Home = () => {
   }
 
   function moveCursorPositionTo(d: number) {
+    displayCursor(cursorPosition-d);
+  }
+  function displayCursor(nextCursorPosition: number, reverseIndex?: boolean) {
     //setMssageText(messageText);
     //setAfterMssageText(afterMessageText);
     //return text.slice(0, -at-1) + c + text.slice(-at-1, -1)
     const fullText = messageText + afterMessageText;
-    const nextCursorPosition = cursorPosition-d;
+    if(reverseIndex) nextCursorPosition = fullText.length - 1 - nextCursorPosition
+    //const nextCursorPosition = ;
     const l = fullText.length+1;
     const cursor = (l+(nextCursorPosition%l))%l;
     const firstHalf = fullText.slice(0,fullText.length-cursor);
@@ -817,19 +823,27 @@ const Home = () => {
     setAfterMssageText(lastHalf);
 
   }
+  function cursorPositionIs(i: number) {
+    displayCursor(i-1, true);
+  }
   function makeTextWrapper(text: string) {
-    return text.split('').map(c=> {
+    return text.split('').map((c,i)=> {
       return <span style={{
         position: 'relative',
         width: '1em',
         height: '1em',
+        pointerEvents: 'auto',
       }}>{c}<span style={{
+        position: 'absolute',
         width: '50%',
-        height: '100%'
-      }}></span><span style={{
+        height: '100%',
+        left: 0,
+      }} onClick={()=>cursorPositionIs(i)}></span><span style={{
+        position: 'absolute',
         width: '50%',
-        height: '100%'
-      }}></span></span>
+        height: '100%',
+        right: 0,
+      }} onClick={()=>cursorPositionIs(i+1)}></span></span>
     })
   }
   return (
@@ -840,9 +854,6 @@ const Home = () => {
             {makeTextWrapper(messageText+'|'+afterMessageText)}
         </span>
         <div className={styles.left_bottom_ui_container}>
-          <button className={styles.cursor_ui_buttons} onClick={()=>moveCursorPositionTo(-1)}>←</button>
-          <button className={styles.cursor_ui_buttons} onClick={()=>moveCursorPositionTo(1)}>→</button>
-          <br/>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
       </div>
