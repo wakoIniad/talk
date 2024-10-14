@@ -807,7 +807,11 @@ const Home = () => {
   function moveCursorPositionTo(d: number) {
     displayCursor(cursorPosition-d);
   }
-  function displayCursor(nextCursorPosition: number, reverseIndex?: boolean) {
+  function displayCursor(
+    nextCursorPosition: number,
+    reverseIndex?: boolean,
+    positiveIsOpen?: boolean,
+  ) {
     //setMssageText(messageText);
     //setAfterMssageText(afterMessageText);
     //return text.slice(0, -at-1) + c + text.slice(-at-1, -1)
@@ -815,7 +819,9 @@ const Home = () => {
     if(reverseIndex) nextCursorPosition = fullText.length - 1 - nextCursorPosition
     //const nextCursorPosition = ;
     const l = fullText.length+1;
-    const cursor = (l+(nextCursorPosition%l))%l;
+    const cursor = positiveIsOpen
+      ? Math.min(nextCursorPosition, fullText.length)
+      : (l+(nextCursorPosition%l))%l;
     const firstHalf = fullText.slice(0,fullText.length-cursor);
     const lastHalf = fullText.slice(fullText.length-cursor);
     setCursorPosition(cursor);
@@ -824,7 +830,7 @@ const Home = () => {
 
   }
   function cursorPositionIs(i: number) {
-    displayCursor(i-1, true);
+    displayCursor(i-1, true, true);
   }
   function makeTextWrapper(text: string) {
     return text.split('').map((c,i)=> {
@@ -851,7 +857,7 @@ const Home = () => {
       <div id="message_display" className={`${styles.message_display} ${PlemolJPReglar.className}`}>
         <button className={`${styles.line_change_target_btn}`} onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
-            {makeTextWrapper(messageText+'|'+afterMessageText)}
+            {makeTextWrapper(messageText+'|'+afterMessageText+'　'.repeat(16))}
         </span>
         <div className={styles.left_bottom_ui_container}>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
