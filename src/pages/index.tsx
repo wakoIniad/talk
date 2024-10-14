@@ -859,16 +859,16 @@ const Home = () => {
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {makeTextWrapper(messageText+'|'+afterMessageText+'　'.repeat(16))}
         </span>
-        <div className={styles.left_bottom_ui_container}>
+        <div className={styles.function_buttons}>
+          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
+          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
+          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
+          <button className={styles.right_ui_buttons}>自動文字変換</button>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
-      </div>
-      <div className={styles.my_note}>
-        ※作り途中。このボタンは使えない
-        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
-        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
-        <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
-        <button className={styles.right_ui_buttons}>AI自動文字変換</button>
+        <br/>
+        <div className={styles.left_bottom_ui_container}>
+        </div>
       </div>
       <div className={styles.input_ui_container}>
         {
