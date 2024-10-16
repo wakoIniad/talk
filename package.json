@@ -17,10 +17,16 @@
     "typecheck": "npm run hcm && tsc --noEmit"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.5",
+    "@langchain/core": "^0.3.11",
+    "@langchain/openai": "^0.3.7",
     "axios": "^1.7.7",
     "js-hira-kata-romanize": "^1.0.5",
+    "langchain": "^0.3.2",
     "mysql": "^2.18.1",
     "next": "^14.2.13",
+    "openai": "^4.67.3",
+    "python-shell": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
