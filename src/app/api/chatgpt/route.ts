@@ -43,41 +43,42 @@ const model = new ChatOpenAI({
 });
 
 
-interface DiffResponse {
-  range: number[];
-  match: boolean;
-}
+function diff(t1: string, t2: string): Array<DiffResponse> {
 
-interface IntegrateResponse {
-  result: string,
-  map: (string|Array<string>)[]
-  /**
-   * ["確定", [ "選択指1",  "選択指2",  "選択指3",  "選択指1" ], "確定2", "確定3" ]
-   * のような感じ
-   */
-}
-
-const GPT_API_KEY = process.env.GPT_API_KEY
-
-function diff(t1: string, t2: string): Array<Object> {
   const matchRanges: Array<DiffResponse> = [ ]
   let l = 0;
   let r = 0;
+  let M = 0;
+  let R = 0;// 未探索部分の左端
   for(let i = 0; i < t1.length; i+=r ) {
     const c = t1[i];
     const j = t2.indexOf(c, i);
     l = -1; r = 1;
+    // @ts-expect-error ts(2345)
     while( t2[j+r] === t1[i+r] && ! [ t1[j+r] , t2[j+r] ].includes(undefined) )r++;
+    // @ts-expect-error ts(2345)
     while( t2[j+l] === t1[i+l] && ! [ t1[j+l] , t2[j+r] ].includes(undefined) )l--;
+    // @ts-expect-error ts(2345)
     if( [ t1[j+r] , t2[j+r], t1[j+l] , t2[j+r] ].includes(undefined) )break;
+    matchRanges.push({
+      range: [ R, l ],// ここの幅は0になる可能性がある。
+      match: false,
+    })
+    matchRanges.push({
+      range: [ l, r+1 ],
+      match: true,
+    });
+    R = r+1;
   }
-  return [{},{},{}] //仮
+  return matchRanges;
 }
+console.log(diff("12345","aiu45"))
 
 function integrate(validations:string[], threshold = 1):IntegrateResponse {
   for( const v1 in validations ) {
     for( const v2 in validations ) {
-      diff(v1,v2)
+      if(v1 == v2) continue;
+      diff(v1,v2);
     }
   }
   return { /** 仮: 送信時以外の返信の場合 */
@@ -94,9 +95,11 @@ export async function GET(request: NextRequest): NextResponse {
     new HumanMessage(message),
     new HumanMessage('上記のひらがなのメッセージを文脈を考えたうえで適切に漢字や数字、記号などに変換してください。誤字が含まれる可能性があります。')
   ]
-  const result = await model.invoke(modelInput);
-  const validation1 = await model.invoke(modelInput);
-  const validation2 = await model.invoke(modelInput);
+  const result  = String((await model.invoke(modelInput)).content);
+  const result2 = String((await model.invoke(modelInput)).content);
+  const result3 = String((await model.invoke(modelInput)).content);
+
+  integrate([result,result2,result3])
   return NextResponse.json(
     { response: "Test response." },
     { status: 200 },
@@ -105,7 +108,10 @@ export async function GET(request: NextRequest): NextResponse {
 
 
 
-
+  /**
+   * ：課題
+   * ab aab のような場合に indexOfだと動作がおかしくなるかもしれない。最大の一致範囲(M)を返す場合処理順が難しい
+   */
 // 人間からのメッセージを作成
 const messages = [
   new HumanMessage("Hello!"),
