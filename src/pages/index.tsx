@@ -4,7 +4,7 @@
  *
  */
 
-const UI_MODE:number = 2;
+const UI_MODE:number = 1;
 
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 
@@ -58,9 +58,6 @@ const UI_STROKE_WEIGHT = 3;
 const LINE_TARGETS_COUNT = 2;
 
 
-/*
-
-
 const uiDivisionCounts = [ 2, 10, 20, 40 ];
 
 const usingUiInitial = [
@@ -75,23 +72,7 @@ const decorationLayer = [3,-1]
 
 const fontMagnification = [ 1, 1, 1, 0.5 ];
 const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.55], [0.5,0.8], [0.7, 1] ];
-const UI_TEXT_POS = [ 1, 1.25, 1.4, 1.9 ]*/
-
-
-const uiDivisionCounts = [ 2, 10, 20 ];
-
-const usingUiInitial = [
-  {from: 0, to: 2},
-  {from: 0, to: uiDivisionCounts[1]},
-  {from: 0, to: 0},
-];
-
-const outputLayer = [2,1]
-const decorationLayer = [-1,-1]
-
-const fontMagnification = [ 1, 1, 1 ];
-const UI_RING_WEIGHT_EACH_LAYER = [ [0,0.25], [0.25,0.6], [0.6,1] ];
-const UI_TEXT_POS = [ 1, 1.25, 1.4 ]
+const UI_TEXT_POS = [ 1, 1.25, 1.4, 1.9 ]
 
 const pallet = [
   '139,27,29', '240,211,0', '10,150,51', '109,183,196', '7,132,186',
@@ -162,7 +143,6 @@ const Home = () => {
   const containerRef = useRef(null!);
   const [uiInputMode, setUiInputMode] = useState(0);
   const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
-  const [ decoWings, setDecoWings ] = useState(false)
   let updateMessageText:string = messageText;
   const lastClickId = useRef([-1,-1]);
 
@@ -369,33 +349,34 @@ const Home = () => {
         setActiveButtons([...activeButtons]);
         break;
       case 2:
+        //if(same&&!(click||select))break;
+        console.log(same,click,select);
         activeButtons[2] = id;
         setActiveButtons([...activeButtons]);
 
         updateMessageText = messageText+inputElm.displayName;
 
+        //updateMessageText =  insertChar(inputElm.displayName.repeat(2),messageText, cursorPosition)
+          //console.log(22,updateMessageText)
 
         optCheckResult = optionableChecker(
           inputElm.value,
           inputElm.displayName,
         );
+//        updateMessageText = messageText+;
 
         if(optCheckResult.length) {/**optを優先の為space&del無効化 */
-          if(UI_MODE === 1) {
-            if(activeButtons[3] !== -1)releaseUiLayerOver(3);
-            usingUI[3].from = 2 * id;
-            usingUI[3].to = usingUI[3].from + optCheckResult.length;
-            if(!(click||select)) {
-              for(let key of optCheckResult) {
-                usingCenterUI[key].value = messageText.slice(-1) + usingCenterUI[key].value
-              }
+          if(activeButtons[3] !== -1)releaseUiLayerOver(3);
+          usingUI[3].from = 2 * id;
+          usingUI[3].to = usingUI[3].from + optCheckResult.length;
+          if(!(click||select)) {
+            for(let key of optCheckResult) {
+              usingCenterUI[key].value = messageText.slice(-1) + usingCenterUI[key].value
             }
-          } else if(UI_MODE == 2) {
-            usingUI[2].from = id-1;
-            usingUI[2].to = id+1;
-            setDecoWings(true)
           }
 
+//          if(!(click || select))break;
+          //updateMessageText = messageText+inputElm.displayName;
           if(UI_MODE === 0) {
             usingCenterUI.space = new ButtonElement({
               name: '',
@@ -548,17 +529,7 @@ const Home = () => {
       case 2:
         const rootId = activeButtons[1];
         const arcId = rawId.parse() - usingUI[2].from;
-        if(decoWings) {
-          ['dakuten','normal','handakuten','small'].forEach(key=> {
-            if(usingCenterUI[key].displayName.length > 0 || key === 'normal') {
-              usableOptions.push(key);
-            }
-          });
-          const usingDeco = usableOptions[arcId];
-
-        } else {
-          return LayerArray[rootId]?LayerArray[rootId].children[arcId]:null;
-        }
+        return LayerArray[rootId]?LayerArray[rootId].children[arcId]:null;
       case 3:
         ['dakuten','handakuten','small'].forEach(key=> {
           if(usingCenterUI[key].displayName.length > 0) {
@@ -587,8 +558,7 @@ const Home = () => {
   }
 
   function getDisplayName(layer: number,name: string) {
-    if(layer === 3 && UI_MODE == 1) return {'dakuten':'゛','handakuten':'゜','small':'小'}[name]
-    if(layer === 2 && decoWings) return {'dakuten':'゛','handakuten':'゜','small':'小'}[name]
+    if(layer === 3) return {'dakuten':'゛','handakuten':'゜','small':'小'}[name]
     if(layer)return name;
     return {'dakuten':'濁','handakuten':'丸','small':'小',
             'space':'空','delete':'削',
