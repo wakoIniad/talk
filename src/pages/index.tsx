@@ -149,12 +149,18 @@ const Home = () => {
   const LayerArray = uiInputSets[uiInputMode]
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
+
   //console.log(LineTextParser(messageText));
   const nowOutputLayer = outputLayer[uiInputMode];
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
+  async function gptConverter(messageText: string) {
+    const result = await fetch(`/api/chatgpt?message=${messageText}`);
+    const parsed = await result.json();
+    return parsed.response
+  }
 
 
   function insertChar(c: string,text: string = messageText , at: number = cursorPosition) {
@@ -175,16 +181,17 @@ const Home = () => {
   }
 
   async function sendToLine(message: string) {
+    const converted = await gptConverter(message)
     console.log("送信中...")
 
     const config = {
       'method' : 'post',
       'headers': { "Content-Type": "application/json" },
-      'body': JSON.stringify({ 'message': LineTextParser(message), 'target': lineTargetId }),
+      'body': JSON.stringify({ 'message': `${LineTextParser(message)}\nAI自動変換後：${converted}`, 'target': lineTargetId }),
     };
     const res = await fetch('/api/line',config)
     setMssageText("");
-    console.log("送信されました～");
+    console.log("送信されました～",config);
     console.info(res);
   }
 
@@ -868,7 +875,7 @@ const Home = () => {
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
-          <button className={styles.right_ui_buttons}>自動文字変換</button>
+          <button className={styles.right_ui_buttons} onClick={()=>gptConverter(messageText)}>自動文字変換</button>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
         <br/>
