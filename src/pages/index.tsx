@@ -162,6 +162,11 @@ const Home = () => {
     return parsed.response
   }
 
+  async function messageTextConverter(messageText: string){
+    const result = await gptConverter(messageText)
+    setMssageText(result)
+  }
+
 
   function insertChar(c: string,text: string = messageText , at: number = cursorPosition) {
     return text.slice(0, -at-1) + c + text.slice(-at-1, -1)
@@ -875,7 +880,7 @@ const Home = () => {
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
-          <button className={styles.right_ui_buttons} onClick={()=>gptConverter(messageText)}>自動文字変換</button>
+          <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText)}>自動文字変換</button>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
         <br/>
