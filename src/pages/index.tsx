@@ -20,7 +20,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 
 
 import localfont from "next/font/local";
-import { exitCode, off } from 'process';
+import { exitCode, off, send } from 'process';
 
 const LINE_TARGET_NICKNAMES = [ "和田家", "友達" ]
 const LINE_TARGET_COLORS = [ "#89BDDE", "#f8b500" ]
@@ -136,6 +136,7 @@ const Home = () => {
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
   const [afterMessageText, setAfterMssageText] = useState('');
+  const sendingNow = useRef(false);
   const touchedId = useRef([-1,-1]);
   const uiGenerated = useRef(false);
   const touchPos = useRef<number[]>([-1,-1]);
@@ -186,7 +187,9 @@ const Home = () => {
   }
 
   async function sendToLine(message: string) {
-    const converted = await gptConverter(message)
+    if(sendingNow.current)return;
+    sendingNow.current = true;
+    const converted = await gptConverter(message);
     console.log("送信中...")
 
     const config = {
@@ -198,6 +201,8 @@ const Home = () => {
     setMssageText("");
     console.log("送信されました～",config);
     console.info(res);
+
+    sendingNow.current = false;
   }
 
   let optCheckResult:string[] = [];
