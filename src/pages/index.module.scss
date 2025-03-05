@@ -25,23 +25,26 @@
   height: 100vh;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
+  //justify-content: center;
+  //align-items: center;
 
   font-family:"UD デジタル 教科書体 N-R", "BIZ UDゴシック Regular", "Hiragino Kaku Gothic ProN", "ascii";
 
   touch-action: none;
 
-  background-color: rgb(230,230,230)
+  background-color: rgb(230,230,230);
+  position: relative;
 }
 
 .input_ui_container {
+
+  //display: inline-block;
   width:100vmin;
   height:100vmin;
-  position: fixed;
+  position: relative;
 
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -49,6 +52,7 @@
 
 .input_ui_btn {
   position: absolute;
+  //background: rgb(193, 174, 174);
   background: rgb(220,220,220);
   width: 100%;
   height: 100%;
@@ -136,6 +140,7 @@
 }
 
 .message_display {
+  display: inline-block;
   //background-color: rgba(200,200,200,0.8);
   background: linear-gradient(to right,
     rgba(200,200,200,0.8),
@@ -145,9 +150,13 @@
   text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
 
   height: 95%;
-  width: 20%;
-  position: absolute;
-  left: 1em;
+  width: calc( ( 100vw - 100vmin ));
+  max-width: 20%;
+  margin-left: 16px;
+  margin-right: 64px;
+  margin-block: auto;
+  position: relative;
+  //left: 1em;
   font-weight: bold;
 
   overflow-wrap: break-word;
