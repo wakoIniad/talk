@@ -852,8 +852,8 @@ const Home = () => {
   function cursorPositionIs(i: number) {
     displayCursor(i-1, true, true);
   }
-  function makeTextWrapper(text: string) {
-    return text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`)).map((c,i)=> {
+  function makeTextWrapper(text: string, offset=0) {
+    return text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`)).filter(f=>f).map((c,i)=> {
       return <span style={{
         position: 'relative',
         width: 'fit-content',
@@ -864,12 +864,12 @@ const Home = () => {
         width: '50%',
         height: '100%',
         left: 0,
-      }} onClick={()=>cursorPositionIs(i)}></span><span style={{
+      }} onClick={()=>cursorPositionIs(offset+i)}></span><span style={{
         position: 'absolute',
         width: '50%',
         height: '100%',
         right: 0,
-      }} onClick={()=>cursorPositionIs(i+1)}></span></span>
+      }} onClick={()=>cursorPositionIs(offset+i+1)}></span></span>
     })
   }
   return (
@@ -879,7 +879,7 @@ const Home = () => {
         style={{background: LINE_TARGET_COLORS[lineTargetId]}}
         onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
-            {makeTextWrapper(messageText+'|'+afterMessageText+'　'.repeat(16))}
+            {[...makeTextWrapper(messageText),'|',makeTextWrapper(afterMessageText+'　'.repeat(16), messageText.length)] }
         </span>
         <div className={styles.function_buttons}>
           <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
