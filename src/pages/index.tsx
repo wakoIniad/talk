@@ -88,7 +88,7 @@ const vowels_display: string =
   "あいうえお"
 const vowels: string[] = "aiueo".split('');
 const consonants_display: string = "あかさたなはまやらわ";
-const consonants: string[] = ",k,s,t,n,h,m,y,r,w".split(',');
+const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
@@ -240,8 +240,9 @@ const Home = () => {
     } else if(type === 1) {//vowel
 
       if(lastConsonant.current) {
-        const addingHiragana = Hiraganizer(lastConsonant.current+vowels[index]);
-        setMssageText(messageText+addingHiragana);
+        const addingHiragana =
+          Hiraganizer( lastConsonant.current.replace(" ","") + vowels[index] );
+        setMssageText( messageText + addingHiragana );
       }
       lastConsonant.current = "";
     }
@@ -255,7 +256,7 @@ const Home = () => {
       //args.options.sameClick = sameClick;
 
       //lastClickId.current = thisClickId;
-      console.log("clicked at ", layer, rawId)
+      console.log("clicked at "+ layer+ rawId)
       newUiHandler(layer, rawId);
     }
   }
@@ -944,14 +945,15 @@ const Home = () => {
                 buttonIndex = 0;
               }
 
+              const args = { layer: buttonType, rawId: buttonIndex, options: {
+                click: true
+              } };
               const button =
                 <CustomButton
                   layer={buttonType}
                   rawId={buttonIndex}
                   className={`${styles.squre_button_item}`}
-                  onClick={()=>uiClicked({ layer: buttonType, rawId: buttonIndex, options: {
-                    click: true
-                  } })}
+                  onClick={()=>uiClicked(args)}
                 >
                   <div>{
                     buttonType === 0 ?
