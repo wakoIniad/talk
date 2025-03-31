@@ -234,13 +234,13 @@ const Home = () => {
     touchedId.current = thisTouchId;
   }*/
 
-  function newUiHandler(type: number, value: number) {
+  function newUiHandler(type: number, index: number) {
     if(type === 0) {//consonant
-      lastConsonant.current = consonants[value];
+      lastConsonant.current = consonants[index];
     } else if(type === 1) {//vowel
 
       if(lastConsonant.current) {
-        const addingHiragana = Hiraganizer(lastConsonant.current+vowels[value]);
+        const addingHiragana = Hiraganizer(lastConsonant.current+vowels[index]);
         setMssageText(messageText+addingHiragana);
       }
       lastConsonant.current = "";
@@ -248,15 +248,15 @@ const Home = () => {
   }
   function uiClicked(args:uiHandlerInterface, touch?: boolean) {
     if( !touch ) {
-      const {rawId, layer} = args;
+      const {layer, rawId} = args;
       //const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
       //const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
       //if(!args.options)args.options = {};
       //args.options.sameClick = sameClick;
 
       //lastClickId.current = thisClickId;
-      console.log("clicked at ", rawId, layer)
-      newUiHandler(rawId, layer);
+      console.log("clicked at ", layer, rawId)
+      newUiHandler(layer, rawId);
     }
   }
 
@@ -936,14 +936,12 @@ const Home = () => {
             let buttonIndex = 0;
             const buttonMatrixWidth = 5;
             const buttonMatrixHeight = 3;
-            let usingDisplayCharList = consonants_display;
             for(let i = 0;i < buttonMatrixHeight * buttonMatrixWidth; i++) {
               if(
                 i === 2 * buttonMatrixWidth
               ) {
                 buttonType++;
                 buttonIndex = 0;
-                usingDisplayCharList = vowels_display;
               }
 
               const button =
@@ -955,7 +953,11 @@ const Home = () => {
                     click: true
                   } })}
                 >
-                  <div>{usingDisplayCharList[buttonIndex]}</div>
+                  <div>{
+                    buttonType === 0 ?
+                      consonants_display[buttonIndex]+"行"
+                      :vowels_display[buttonIndex]
+                  }</div>
                 </CustomButton>;
               buttons.push(button);
               buttonIndex++;
