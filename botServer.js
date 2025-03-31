@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 
 const BOT_TOKEN = process.env.DISCORD_API_TOKEN; // ここにBotのトークンを設定
 const GATEWAY_URL = 'wss://gateway.discord.gg/?v=10&encoding=json';
-console.log(BOT_TOKEN)
+//console.log(BOT_TOKEN)
 let heartbeatInterval;
 const ws = new WebSocket(GATEWAY_URL);
 
