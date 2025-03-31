@@ -67,7 +67,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
 ];
 
-const outputLayer = [2,1]
+/*const outputLayer = [2,1]
 const decorationLayer = [3,-1]
 
 const fontMagnification = [ 1, 1, 1, 0.5 ];
@@ -79,7 +79,17 @@ const pallet = [
 ];
 const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
-];
+];*/
+
+  //const characters: string =
+  //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
+  //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
+const vowels_display: string =
+  "あいうえお"
+const vowels: string[] = "aiueo".split('');
+const consonants_display: string = "あかさたなはまやらわ";
+const consonants: string[] = ",k,s,t,n,h,m,y,r,w".split(',');
+const decorations: string = "゛゜小";
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -145,14 +155,15 @@ const Home = () => {
   const [uiInputMode, setUiInputMode] = useState(0);
   const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
   let updateMessageText:string = messageText;
-  const lastClickId = useRef([-1,-1]);
+  //const lastClickId = useRef([-1,-1]);
+  const lastConsonant = useRef("");
 
   const LayerArray = uiInputSets[uiInputMode]
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
 
   //console.log(LineTextParser(messageText));
-  const nowOutputLayer = outputLayer[uiInputMode];
+  //const nowOutputLayer = outputLayer[uiInputMode];
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
@@ -222,18 +233,29 @@ const Home = () => {
     console.log("touchMOVE");
     touchedId.current = thisTouchId;
   }
+
+  function newUiHandler(type: number, value: number) {
+    if(type === 0) {//consonant
+      lastConsonant.current = consonants[value];
+    } else if(type === 1) {//vowel
+      if(lastConsonant.current) {
+
+      }
+      lastConsonant.current = "";
+    }
+  }
   function uiClicked(args:uiHandlerInterface, touch?: boolean) {
     if( !touch ) {
       const {rawId, layer} = args;
-      const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
-      const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
-      if(!args.options)args.options = {};
-      args.options.sameClick = sameClick;
+      //const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
+      //const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
+      //if(!args.options)args.options = {};
+      //args.options.sameClick = sameClick;
 
-      lastClickId.current = thisClickId;
-      console.log(sameClick)
+      //lastClickId.current = thisClickId;
+      console.log("clicked at ", rawId, layer)
+      newUiHandler(rawId, layer);
     }
-    uiHandler(args);
   }
 
   interface uiHandlerInterface {
@@ -264,6 +286,7 @@ const Home = () => {
       value: updateMessageText.slice(-1)+'_'
     });
   }
+  /*
   function uiHandler(args:uiHandlerInterface) {
 
     const {rawId, layer, options: { click = false, select = false, same = false, sameClick = false } = {}} = args;
@@ -316,14 +339,14 @@ const Home = () => {
             }
           }
         }
-        if(optCheckResult.length) {/**optを優先の為space&del無効化 */
+        if(optCheckResult.length) {//optを優先の為space&del無効化
           if(UI_MODE === 0) {
             usingCenterUI.space = new ButtonElement({
               name: '',
               value: ''
             });
 
-            if(!enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
+            if(!enableDelete) {//操作数の最大値が2: １つ以上無効化されるため余る。
               usingCenterUI.delete = new ButtonElement({name: '', value: ''});
             }
           } else {
@@ -345,10 +368,10 @@ const Home = () => {
         } else
         if( activeButtons[1] === id && click) {
 
-          /*activeButtons[1] = -1;
-          activeButtons[2] = -1;
-
-          usingUI[2].to = usingUI[2].from;*/
+          //activeButtons[1] = -1;
+          //activeButtons[2] = -1;
+          //
+          //usingUI[2].to = usingUI[2].from;
           releaseUiLayerOver(1);
 
           resetCenterUI("message-control");
@@ -382,7 +405,7 @@ const Home = () => {
         );
 //        updateMessageText = messageText+;
 
-        if(optCheckResult.length) {/**optを優先の為space&del無効化 */
+        if(optCheckResult.length) {//optを優先の為space&del無効化
           if(activeButtons[3] !== -1)releaseUiLayerOver(3);
           usingUI[3].from = 2 * id;
           usingUI[3].to = usingUI[3].from + optCheckResult.length;
@@ -429,7 +452,7 @@ const Home = () => {
 
     setMssageText(updateMessageText);
     console.log(updateMessageText)
-  }
+  }*/
 
   function resetCenterUI(mode: string) {
     Object.keys(usingCenterUI).forEach(key=> {
@@ -508,12 +531,6 @@ const Home = () => {
 
     return useOpt;
   }
-  //const characters: string =
-  //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
-  //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
-  const characters: string =
-    "あかさたなはまやらわ\n"+
-    "あいうえお";
   interface makeButtonInterFace {
     layer: number;
     id: number;
@@ -575,7 +592,7 @@ const Home = () => {
     return new ButtonElement({name: '', value: ''});
   }
 
-  function rescalePx(npx:number) {
+/*  function rescalePx(npx:number) {
     return 1/vmin*1*npx;
   }
 
@@ -586,7 +603,7 @@ const Home = () => {
             'space':'空','delete':'削',
     }?.[name] || '';
   }
-/*
+
   function makeButton( {
     layer = -1,
     id = -1,
@@ -730,48 +747,48 @@ const Home = () => {
   const CustomButton = ({ children, layer, rawId, style, ...props }
     : CustomButtonProps&React.ComponentProps<'button'> ) => {
 
-    const getUiElementTouched = (e: any, etype:string) => {
-      if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
-      const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
-      if(etype === "end") {
-        touchPos.current = [-1,-1];
-        firstTouch.current = true;
-      }
-      if(element instanceof HTMLElement) {
-        const elementId = element.getAttribute('id');
-        if(elementId !== null) {
-          const [ _type, elmLayer, elmId ] = elementId.split('_');
-          uiTouched({
-            rawId: Number(elmId),
-            layer: Number(elmLayer), options: {
-              click: etype === "start" || firstTouch.current,
-              select: etype === "end",
-            }
-          })
-        }
-      }
-    }
+    //const getUiElementTouched = (e: any, etype:string) => {
+    //  if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
+    //  const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
+    //  if(etype === "end") {
+    //    touchPos.current = [-1,-1];
+    //    firstTouch.current = true;
+    //  }
+    //  if(element instanceof HTMLElement) {
+    //    const elementId = element.getAttribute('id');
+    //    if(elementId !== null) {
+    //      const [ _type, elmLayer, elmId ] = elementId.split('_');
+    //      uiTouched({
+    //        rawId: Number(elmId),
+    //        layer: Number(elmLayer), options: {
+    //          click: etype === "start" || firstTouch.current,
+    //          select: etype === "end",
+    //        }
+    //      })
+    //    }
+    //  }
+    //}
     const buttonRef = useRef<HTMLButtonElement>(null!);
-    const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
-
-    const handleTouchMove = (e:any)=>getUiElementTouched(e,"move");
-
-    const handleTouchEnd = (e:any)=>getUiElementTouched(e,"end");
+    //const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
+    //
+    //const handleTouchMove = (e:any)=>getUiElementTouched(e,"move");
+    //
+    //const handleTouchEnd = (e:any)=>getUiElementTouched(e,"end");
 
 
     useEffect(() => {
       const itemElement = buttonRef.current;
       //itemElement.RemoveAllListeners();
      // itemElement.addEventListener("touchstart", handleTouchStart, { passive: false });
-      itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
-      itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
+      //itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+      //itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
 
 
       return () => {
       };
     }, []);
 
-    const additionStyle:{[key: string]: string} = {}
+    //const additionStyle:{[key: string]: string} = {}
     /*if(touchedId.join(',') === [loopIndex(uiDivisionCounts[layer], rawId),layer].join(',')) {
       additionStyle.pointerEvents = 'none';
       console.log("events:none")
@@ -780,7 +797,7 @@ const Home = () => {
        // 登録したイベントリスナーをrefを使って参照する
       <button ref={buttonRef}
         {...props}
-        style={{...style, ...additionStyle}}
+        style={{...style/*, ...additionStyle*/}}
         id={`btn_${layer}_${loopIndex(uiDivisionCounts[layer],rawId)}`}
       >
         {children}
@@ -788,7 +805,7 @@ const Home = () => {
     );
   }
 
-  function makeGradationBG(rgb:string,layer:number) {
+  /*function makeGradationBG(rgb:string,layer:number) {
     const R =
     UI_RING_WEIGHT_EACH_LAYER[layer][0]/
     UI_RING_WEIGHT_EACH_LAYER[layer][1]*0.8;
@@ -802,7 +819,7 @@ const Home = () => {
       }) ${p + (100-p)*R}%`
     ).join(",");
     return result;
-  }
+  }*/
   function changeLineTarget() {
     if(LINE_TARGETS_COUNT === 1 + lineTargetId) {
       setLineTargetId(0);
@@ -917,14 +934,14 @@ const Home = () => {
             let buttonIndex = 0;
             const buttonMatrixWidth = 5;
             const buttonMatrixHeight = 3;
+            let usingDisplayCharList = consonants_display;
             for(let i = 0;i < buttonMatrixHeight * buttonMatrixWidth; i++) {
               if(
-                i === 2 * buttonMatrixWidth ||
-                //i === 3 * buttonMatrixWidth ||
-                //i === 4 * buttonMatrixWidth
+                i === 2 * buttonMatrixWidth
               ) {
                 buttonType++;
                 buttonIndex = 0;
+                usingDisplayCharList = vowels_display;
               }
 
               const button =
@@ -936,7 +953,7 @@ const Home = () => {
                     click: true
                   } })}
                 >
-                  <div>a</div>
+                  <div>{usingDisplayCharList[buttonIndex]}</div>
                 </CustomButton>;
               buttons.push(button);
               buttonIndex++;
