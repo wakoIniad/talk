@@ -815,7 +815,9 @@ const Home = () => {
           (Number(id)+(20-offset))%len+offset
     );
   }
-
+  const CommentOut = () => {
+    return <></>
+  }
   const CustomButton = ({ children, layer, rawId, style, ...props }
     : CustomButtonProps&React.ComponentProps<'button'> ) => {
 
@@ -977,9 +979,11 @@ const Home = () => {
             {[...makeTextWrapper(messageText),'|',makeTextWrapper(afterMessageText+'　'.repeat(16), messageText.length)] }
         </span>
         <div className={styles.function_buttons}>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
+          <CommentOut>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
+          </CommentOut>
           <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText)}>自動文字変換</button>
           <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
         </div>
