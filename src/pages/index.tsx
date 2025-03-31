@@ -216,9 +216,9 @@ const Home = () => {
     sendingNow.current = false;
   }
 
-  let optCheckResult:string[] = [];
-  let lastTouchedTime = useRef<number>(-1);
-  function uiTouched(args:uiHandlerInterface) {
+  //let optCheckResult:string[] = [];
+  //let lastTouchedTime = useRef<number>(-1);
+  /*function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
     const same = touchedId.current.join(",") === thisTouchId.join(",");
@@ -232,14 +232,16 @@ const Home = () => {
     //uiClicked(args);
     console.log("touchMOVE");
     touchedId.current = thisTouchId;
-  }
+  }*/
 
   function newUiHandler(type: number, value: number) {
     if(type === 0) {//consonant
       lastConsonant.current = consonants[value];
     } else if(type === 1) {//vowel
-      if(lastConsonant.current) {
 
+      if(lastConsonant.current) {
+        const addingHiragana = Hiraganizer(lastConsonant.current+vowels[value]);
+        setMssageText(messageText+addingHiragana);
       }
       lastConsonant.current = "";
     }
