@@ -41,13 +41,13 @@ $decoration_ui_width: 300px;
 .input_ui_container {
   min-width: calc( 100vmin / 3 * 4);
 //  width:calc(100% - $decoration_ui_width);
-  height: calc( ( 100vmin  / 3 * 4) / 5 * 3);
+  height: calc( ( 100vmin  / 3 * 4) / 5 * 3.75 );
   position: relative;
 
   //display: inline-flex;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr) 0.75fr;
   flex-direction: column;
   justify-content: center;
   align-items: center;

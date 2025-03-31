@@ -90,6 +90,7 @@ const vowels: string[] = "aiueo".split('');
 const consonants_display: string = "あかさたなはまやらわ";
 const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
+const functions_display: string = "削除".split(',');
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -245,6 +246,14 @@ const Home = () => {
         setMssageText( messageText + addingHiragana );
       }
       lastConsonant.current = "";
+    } else if(type === 2) {//decoration
+      setMssageText( messageText + decorations[index] );
+    } else if(type === 3) {//functions
+      switch(index) {
+        case 0://delete
+          setMssageText( messageText.slice(0, -1) );
+          break;
+      }
     }
   }
   function uiClicked(args:uiHandlerInterface, touch?: boolean) {
@@ -937,9 +946,19 @@ const Home = () => {
             let buttonIndex = 0;
             const buttonMatrixWidth = 5;
             const buttonMatrixHeight = 3;
-            for(let i = 0;i < buttonMatrixHeight * buttonMatrixWidth; i++) {
+            const decorationButtonCount = 3;
+            const functionButtonCount = 1;
+            for(
+              let i = 0;
+              i <
+                buttonMatrixHeight * buttonMatrixWidth +
+                decorationButtonCount + functionButtonCount;
+              i++
+            ) {
               if(
-                i === 2 * buttonMatrixWidth
+                i === 2 * buttonMatrixWidth ||
+                i === 3 * buttonMatrixWidth ||
+                i === 3 * buttonMatrixWidth + decorationButtonCount
               ) {
                 buttonType++;
                 buttonIndex = 0;
@@ -956,9 +975,13 @@ const Home = () => {
                   onClick={()=>uiClicked(args)}
                 >
                   <div>{
-                    buttonType === 0 ?
-                      consonants_display[buttonIndex]+"行"
-                      :vowels_display[buttonIndex]
+                    buttonType === 0
+                      ? consonants_display[buttonIndex]+"行"
+                      : buttonType === 1
+                      ? vowels_display[buttonIndex]
+                      : buttonType === 2
+                      ? decorations[buttonIndex]
+                      : functions_display[buttonIndex]
                   }</div>
                 </CustomButton>;
               buttons.push(button);
