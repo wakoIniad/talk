@@ -47,6 +47,19 @@ async function sendMessageProcess(message) {
         console.error('Error:', error);
     }
 };
+const BROADCAST_CHANNEL_NAME = "和田家";
+async function broadcastMessage(message) {
+  const guilds = await GetServerChannels();
+  for(const guild of guilds) {
+    if(guild.guildId === "1356362520062988480") {
+      for(const channel of guild.channels) {
+        if(channel.name === "受信用") {
+          sendMessage(channel.id, message);
+        }
+      }
+    }
+  }
+}
 export function GET(request) {
   // GET /api/users リクエストの処理
   const params = request.nextUrl.searchParams;
@@ -61,7 +74,7 @@ export async function POST(request) {
   // POST /api/users リクエストの処理
   try {
     const params = await request.json();
-    sendMessageProcess(params.message);
+    broadcastMessage(params.message);
     return NextResponse.json(
       { response: "success" },
       { status: 200 },
@@ -74,13 +87,9 @@ export async function POST(request) {
   }
 }
 
-// app/api/discord/guilds/route.js
-import axios from "axios";
-import { NextResponse } from "next/server";
 
 const TOKEN = process.env.DISCORD_API_TOKEN; // 環境変数からトークンを取得
-
-export async function GET() {
+async function GetServerChannels() {
     try {
         // 1. Botが参加しているサーバー一覧を取得
         const guildsResponse = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
@@ -114,9 +123,8 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(allChannels, { status: 200 });
+        return allChannels
     } catch (error) {
-        console.error("エラー:", error.response?.data || error.message);
-        return NextResponse.json({ error: "Failed to fetch data from Discord API" }, { status: 500 });
+        return [];
     }
 }
