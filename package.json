@@ -29,7 +29,8 @@
     "openai": "^4.67.3",
     "python-shell": "^5.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "zlib-sync": "^0.1.9"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
