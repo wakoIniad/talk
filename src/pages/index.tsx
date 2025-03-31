@@ -89,15 +89,20 @@ const pallet2 = [
 //const vowels: string[] = "aiueo".split('');
 const consonants_display: string[] = "あ,か,さ,た,な,は,ま,や,ら,わ+ん".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
-const decorations: string = "゛゜";
-const decorations_display: string = "゛゜";
-const functions_display: string[] = "削除,小".split(',');
+const decorations: string = "゛゜小";
+const decorations_display: string = "゛゜小";
+const functions_display: string[] = "削除".split(',');
 const ui_premise = [
   [-1,0,1,2],
   [0],
   [1],
   [-1,0,1,2]
 ];
+const decoration_premise = [
+  'かきくけこさしすえそたちつてとはひふへほ',
+  'はひふへほ',
+  'あいうえおつやゆよ'
+]
 const hiraganaDict = [
   'あいうえお',
   'かきくけこ',
@@ -110,6 +115,17 @@ const hiraganaDict = [
   'らりるれろ',
   'わ_を_ん'
 ]
+const lowerHiraganaDict = {
+  'つ':'っ',
+  'や':'ゃ',
+  'ゆ':'ゅ',
+  'よ':'ょ',
+  'あ':'ぁ',
+  'い':'ぃ',
+  'う':'ぅ',
+  'え':'ぇ',
+  'お':'ぉ',
+}
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -272,7 +288,24 @@ const Home = () => {
       lastActivated.current[0] = 1;
       lastActivated.current[1] = index;
     } else if(type === 2) {//decoration
-      setMssageText( messageText + decorations[index] );
+      switch(index) {
+        case 0:
+          setMssageText( messageText + '゛' );
+          break;
+        case 1:
+          setMssageText( messageText + '゜' );
+          break;
+        case 2:
+          const c = messageText.slice(-1);
+          setMssageText(
+            messageText.slice(0,-1) +
+
+            (lowerHiraganaDict?.[c] ?? c)
+
+          )
+          break;
+      }
+
       lastActivated.current[0] = -1;
       lastActivated.current[1] = index;
     } else if(type === 3) {//functions
@@ -1005,7 +1038,12 @@ const Home = () => {
                     lastActivated.current[1] === buttonIndex
                     ? "#FFFF00"
                     :ui_premise[buttonType].includes(lastActivated.current[0])
-                      ? '#FFFFFF'
+                      ? buttonType === 2
+                        ? ( decoration_premise[buttonIndex].includes(messageText.slice(-1))
+                          ? '#FFFFFF'
+                          : '#999999'
+                        )
+                      : '#FFFFFF'
                       : '#999999'
                   }}
                   className={`${styles.squre_button_item}`}
