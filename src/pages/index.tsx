@@ -106,7 +106,7 @@ const decoration_premise = [
 const hiraganaDict = [
   'あいうえお',
   'かきくけこ',
-  'さしすえそ',
+  'さしすせそ',
   'たちつてと',
   'なにぬねの',
   'はひふへほ',
@@ -984,8 +984,8 @@ const Home = () => {
             <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
             <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
           </CommentOut>
-          <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText)}>自動文字変換</button>
-          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
+          <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText+afterMessageText)}>自動文字変換</button>
+          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText+afterMessageText)}>Discordに送る</button>
         </div>
         <br/>
         <div className={styles.left_bottom_ui_container}>

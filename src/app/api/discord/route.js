@@ -4,32 +4,36 @@ import { NextRequest, NextResponse, } from "next/server";
 
 const DISCORD_API_TOKEN = process.env.DISCORD_API_TOKEN;
 
-const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 
-const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // ここにBotのトークンを設定
-const MESSAGE_CONTENT = 'Hello! This is a test message from the bot.';
+//const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // ここにBotのトークンを設定
+//const MESSAGE_CONTENT = 'Hello! This is a test message from the bot.';
 
 async function getDMChannels() {
-    const response = await fetch('https://discord.com/api/v10/users/@me/channels', {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bot ${BOT_TOKEN}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    const channels = await response.json();
+    const config = {
+      'headers': {
+          'Authorization': `Bot ${DISCORD_API_TOKEN}`,
+          'Content-Type': 'application/json'
+      }
+    }
+    const response = await axios.get('https://discord.com/api/v10/users/@me/channels', config);
+    console.log(response.data)
+    const channels = response.data;
     return channels;
 }
 
 async function sendMessage(channelId, message) {
-    await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bot ${BOT_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ content: message })
-    });
+    const config = {
+      'headers': {
+        'Authorization': `Bot ${DISCORD_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    const data = { content: message };
+    await axios.post(`https://discord.com/api/v10/channels/${channelId}/messages`,
+      data,
+      config
+    );
 }
 
 async function sendMessageProcess(message) {
@@ -55,6 +59,64 @@ export function GET(request) {
 }
 export async function POST(request) {
   // POST /api/users リクエストの処理
-  const params = await request.json();
-  sendMessageProcess(params.message);
+  try {
+    const params = await request.json();
+    sendMessageProcess(params.message);
+    return NextResponse.json(
+      { response: "success" },
+      { status: 200 },
+    );
+  } catch(e) {
+    return NextResponse.json(
+      { response: "failed" },
+      { status: 500 },
+    );
+  }
+}
+
+// app/api/discord/guilds/route.js
+import axios from "axios";
+import { NextResponse } from "next/server";
+
+const TOKEN = process.env.DISCORD_API_TOKEN; // 環境変数からトークンを取得
+
+export async function GET() {
+    try {
+        // 1. Botが参加しているサーバー一覧を取得
+        const guildsResponse = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
+            headers: {
+                Authorization: `Bot ${TOKEN}`
+            }
+        });
+
+        const guilds = guildsResponse.data;
+
+        let allChannels = [];
+
+        // 2. 各サーバーのチャンネル一覧を取得
+        for (const guild of guilds) {
+            const channelsResponse = await axios.get(`https://discord.com/api/v10/guilds/${guild.id}/channels`, {
+                headers: {
+                    Authorization: `Bot ${TOKEN}`
+                }
+            });
+
+            const channels = channelsResponse.data;
+
+            allChannels.push({
+                guildId: guild.id,
+                guildName: guild.name,
+                channels: channels.map(channel => ({
+                    id: channel.id,
+                    name: channel.name,
+                    type: channel.type
+                }))
+            });
+        }
+
+        return NextResponse.json(allChannels, { status: 200 });
+    } catch (error) {
+        console.error("エラー:", error.response?.data || error.message);
+        return NextResponse.json({ error: "Failed to fetch data from Discord API" }, { status: 500 });
+    }
 }
