@@ -24,7 +24,7 @@
 .container {
   height: 100vh;
   min-height: 100vh;
-  display: static;
+  display: flex;
   flex-direction: row;
   //justify-content: center;
   //align-items: center;
@@ -37,13 +37,15 @@
   position: relative;
 }
 
-$message_text_display_width: 300px;
+$message_text_display_width: 0px;
 .input_ui_container {
   width: calc( 100vmin / 3 * 4);
   max-width: calc(100vw - $message_text_display_width);
   //width:calc(100% - $decoration_ui_width);
   //max-height: ;
-  height: calc(min(100vmin  / 3 * 4,  100vw - $message_text_display_width ) / 5 * 3.75 );
+  height: calc((100vmin  / 3 * 4 ) / 5 * 3.75 );
+
+  //height: calc(min(100vmin  / 3 * 4,  100vw - $message_text_display_width ) / 5 * 3.75 );
   position: relative;
 
   //display: inline-flex;
@@ -153,9 +155,9 @@ $message_text_display_width: 300px;
     rgba(200,200,200,0.8),
   );
   text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
-
+  flex-grow: 1;
   height: 95%;
-  width: $message_text_display_width;
+  min-width: $message_text_display_width;
   max-width: 20%;
   margin-left: 16px;
   margin-right: 64px;
