@@ -1,8 +1,8 @@
 const WebSocket = require('ws');
 
-const BOT_TOKEN = "MTM1NjM1NzY3Mzk1OTk1MjQ5NA.G2f-5K.9obPV7ju5m-PUgzMgiHQeBaI_Z0txbNOqvIc_k"; // ここにBotのトークンを設定
+const BOT_TOKEN = process.env.DISCORD_API_TOKEN; // ここにBotのトークンを設定
 const GATEWAY_URL = 'wss://gateway.discord.gg/?v=10&encoding=json';
-
+console.log(BOT_TOKEN)
 let heartbeatInterval;
 const ws = new WebSocket(GATEWAY_URL);
 
