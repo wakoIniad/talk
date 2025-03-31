@@ -20,7 +20,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 
 
 import localfont from "next/font/local";
-import { exitCode, off } from 'process';
+import { exitCode, off, send } from 'process';
 
 const LINE_TARGET_NICKNAMES = [ "和田家", "友達" ]
 const LINE_TARGET_COLORS = [ "#89BDDE", "#f8b500" ]
@@ -67,7 +67,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
 ];
 
-const outputLayer = [2,1]
+/*const outputLayer = [2,1]
 const decorationLayer = [3,-1]
 
 const fontMagnification = [ 1, 1, 1, 0.5 ];
@@ -79,7 +79,53 @@ const pallet = [
 ];
 const pallet2 = [
   '246,162,230', '218,162,248', '194,205,250', '153,232,236', '250,255,255',
+];*/
+
+  //const characters: string =
+  //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
+  //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
+//const vowels_display: string[] =
+//  "あ,い,う,え,お".split(',');
+//const vowels: string[] = "aiueo".split('');
+const consonants_display: string[] = "あ,か,さ,た,な,は,ま,や,ら,わ+ん".split(',');
+//const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
+const decorations: string = "゛゜小";
+const decorations_display: string = "゛゜小";
+const functions_display: string[] = "削除".split(',');
+const ui_premise = [
+  [-1,0,1,2],
+  [0],
+  [1],
+  [-1,0,1,2]
 ];
+const decoration_premise = [
+  'かきくけこさしすえそたちつてとはひふへほ',
+  'はひふへほ',
+  'あいうえおつやゆよ'
+]
+const hiraganaDict = [
+  'あいうえお',
+  'かきくけこ',
+  'さしすせそ',
+  'たちつてと',
+  'なにぬねの',
+  'はひふへほ',
+  'まみむめも',
+  'や_ゆ_よ',
+  'らりるれろ',
+  'わ_を_ん'
+]
+const lowerHiraganaDict = {
+  'つ':'っ',
+  'や':'ゃ',
+  'ゆ':'ゅ',
+  'よ':'ょ',
+  'あ':'ぁ',
+  'い':'ぃ',
+  'う':'ぅ',
+  'え':'ぇ',
+  'お':'ぉ',
+}
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -109,8 +155,8 @@ const LayerArray_numbers = new ButtonLayers(...'0123456789'.split('').map(n=>
 
 const uiInputSets = [LayerArray_hiragana,LayerArray_numbers]
 
-function loopIndex( length: number, raw: RawId ):number {
-  return (length + raw.parse())%length;
+function loopIndex( length: number, raw: number ):number {
+  return (length + raw)%length;
 }
 
 const initialUsingCenterUi:{[key:string]: ButtonElement}= {
@@ -130,12 +176,14 @@ function LineTextParser(text:string) {
 
 const Home = () => {
   const [ _ , UpdateApp ] = useState([])
+  const lastActivated = useRef([-1,-1]);
 
   const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
   const [afterMessageText, setAfterMssageText] = useState('');
+  const sendingNow = useRef(false);
   const touchedId = useRef([-1,-1]);
   const uiGenerated = useRef(false);
   const touchPos = useRef<number[]>([-1,-1]);
@@ -144,17 +192,29 @@ const Home = () => {
   const [uiInputMode, setUiInputMode] = useState(0);
   const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
   let updateMessageText:string = messageText;
-  const lastClickId = useRef([-1,-1]);
+  //const lastClickId = useRef([-1,-1]);
+  const lastConsonantIndex = useRef(-1);
 
   const LayerArray = uiInputSets[uiInputMode]
 
   const [usingCenterUI, setUsingCenterUI] = useState(initialUsingCenterUi);
+
   //console.log(LineTextParser(messageText));
-  const nowOutputLayer = outputLayer[uiInputMode];
+  //const nowOutputLayer = outputLayer[uiInputMode];
 
   const { width, height } = getWindowSize();
   const vmin = Math.min(width, height);
 
+  async function gptConverter(messageText: string) {
+    const result = await fetch(`/api/chatgpt?message=${messageText}`);
+    const parsed = await result.json();
+    return parsed.response
+  }
+
+  async function messageTextConverter(messageText: string){
+    const result = await gptConverter(messageText)
+    setMssageText(result)
+  }
 
 
   function insertChar(c: string,text: string = messageText , at: number = cursorPosition) {
@@ -175,22 +235,27 @@ const Home = () => {
   }
 
   async function sendToLine(message: string) {
+    if(sendingNow.current)return;
+    sendingNow.current = true;
+    const converted = await gptConverter(message);
     console.log("送信中...")
 
     const config = {
       'method' : 'post',
       'headers': { "Content-Type": "application/json" },
-      'body': JSON.stringify({ 'message': LineTextParser(message), 'target': lineTargetId }),
+      'body': JSON.stringify({ 'message': `${LineTextParser(message)}\nAI自動変換後：${converted}`, 'target': lineTargetId }),
     };
-    const res = await fetch('/api/line',config)
+    const res = await fetch('/api/discord',config)
     setMssageText("");
-    console.log("送信されました～");
+    console.log("送信されました～",config);
     console.info(res);
+
+    sendingNow.current = false;
   }
 
-  let optCheckResult:string[] = [];
-  let lastTouchedTime = useRef<number>(-1);
-  function uiTouched(args:uiHandlerInterface) {
+  //let optCheckResult:string[] = [];
+  //let lastTouchedTime = useRef<number>(-1);
+  /*function uiTouched(args:uiHandlerInterface) {
     const {rawId, layer} = args;
     const thisTouchId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
     const same = touchedId.current.join(",") === thisTouchId.join(",");
@@ -204,23 +269,69 @@ const Home = () => {
     //uiClicked(args);
     console.log("touchMOVE");
     touchedId.current = thisTouchId;
+  }*/
+
+  function newUiHandler(type: number, index: number) {
+    if(type === 0) {//consonant
+      lastConsonantIndex.current = index;
+      UpdateApp([]);
+
+      lastActivated.current[0] = 0;
+      lastActivated.current[1] = index;
+    } else if(type === 1) {//vowel
+      if(lastConsonantIndex.current !== -1) {
+        const addingHiragana =
+          hiraganaDict[lastConsonantIndex.current][index];
+        setMssageText( messageText + addingHiragana );
+      }
+
+      lastActivated.current[0] = 1;
+      lastActivated.current[1] = index;
+    } else if(type === 2) {//decoration
+      switch(index) {
+        case 0:
+          setMssageText( messageText + '゛' );
+          break;
+        case 1:
+          setMssageText( messageText + '゜' );
+          break;
+        case 2:
+          const c = messageText.slice(-1);
+          setMssageText(
+            messageText.slice(0,-1) +
+
+            (lowerHiraganaDict?.[c] ?? c)
+
+          )
+          break;
+      }
+
+      lastActivated.current[0] = -1;
+      lastActivated.current[1] = index;
+    } else if(type === 3) {//functions
+      switch(index) {
+        case 0://delete
+          setMssageText( messageText.slice(0, -1) );
+          break;
+      }
+    }
   }
   function uiClicked(args:uiHandlerInterface, touch?: boolean) {
     if( !touch ) {
-      const {rawId, layer} = args;
-      const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
-      const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
-      if(!args.options)args.options = {};
-      args.options.sameClick = sameClick;
+      const {layer, rawId} = args;
+      //const thisClickId = [loopIndex(uiDivisionCounts[layer], rawId),layer];
+      //const sameClick = lastClickId.current.join(",") === thisClickId.join(",");
+      //if(!args.options)args.options = {};
+      //args.options.sameClick = sameClick;
 
-      lastClickId.current = thisClickId;
-      console.log(sameClick)
+      //lastClickId.current = thisClickId;
+      console.log("clicked at "+ layer+ rawId)
+      newUiHandler(layer, rawId);
     }
-    uiHandler(args);
   }
 
   interface uiHandlerInterface {
-    rawId: RawId, layer: number,
+    rawId: number, layer: number,
     options?: {
       click?: boolean,
       select?: boolean,
@@ -247,6 +358,7 @@ const Home = () => {
       value: updateMessageText.slice(-1)+'_'
     });
   }
+  /*
   function uiHandler(args:uiHandlerInterface) {
 
     const {rawId, layer, options: { click = false, select = false, same = false, sameClick = false } = {}} = args;
@@ -261,7 +373,7 @@ const Home = () => {
 
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     if(click || select)console.log(id, rawId, layer, usingUI[layer]);
-    const inputElm = getUiElementFromLayer(layer,rawId);
+    const inputElm = getUiElementFromLayer(layer, rawId);
 
     updateMessageText = messageText;
     switch(layer) {
@@ -299,14 +411,14 @@ const Home = () => {
             }
           }
         }
-        if(optCheckResult.length) {/**optを優先の為space&del無効化 */
+        if(optCheckResult.length) {//optを優先の為space&del無効化
           if(UI_MODE === 0) {
             usingCenterUI.space = new ButtonElement({
               name: '',
               value: ''
             });
 
-            if(!enableDelete) {/**操作数の最大値が2: １つ以上無効化されるため余る。 */
+            if(!enableDelete) {//操作数の最大値が2: １つ以上無効化されるため余る。
               usingCenterUI.delete = new ButtonElement({name: '', value: ''});
             }
           } else {
@@ -328,10 +440,10 @@ const Home = () => {
         } else
         if( activeButtons[1] === id && click) {
 
-          /*activeButtons[1] = -1;
-          activeButtons[2] = -1;
-
-          usingUI[2].to = usingUI[2].from;*/
+          //activeButtons[1] = -1;
+          //activeButtons[2] = -1;
+          //
+          //usingUI[2].to = usingUI[2].from;
           releaseUiLayerOver(1);
 
           resetCenterUI("message-control");
@@ -365,7 +477,7 @@ const Home = () => {
         );
 //        updateMessageText = messageText+;
 
-        if(optCheckResult.length) {/**optを優先の為space&del無効化 */
+        if(optCheckResult.length) {//optを優先の為space&del無効化
           if(activeButtons[3] !== -1)releaseUiLayerOver(3);
           usingUI[3].from = 2 * id;
           usingUI[3].to = usingUI[3].from + optCheckResult.length;
@@ -412,7 +524,7 @@ const Home = () => {
 
     setMssageText(updateMessageText);
     console.log(updateMessageText)
-  }
+  }*/
 
   function resetCenterUI(mode: string) {
     Object.keys(usingCenterUI).forEach(key=> {
@@ -491,7 +603,6 @@ const Home = () => {
 
     return useOpt;
   }
-
   interface makeButtonInterFace {
     layer: number;
     id: number;
@@ -500,7 +611,7 @@ const Home = () => {
     styleSettings?: {[key:string]:any}
   }
 
-  function getUiElementFromLayer(layer: number, rawId: RawId):ButtonElement {
+  function getUiElementFromLayer(layer: number, rawId: number):ButtonElement {
 
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     const usableOptions:Array<string> = [];
@@ -528,7 +639,7 @@ const Home = () => {
         return LayerArray[id];
       case 2:
         const rootId = activeButtons[1];
-        const arcId = rawId.parse() - usingUI[2].from;
+        const arcId = rawId - usingUI[2].from;
         return LayerArray[rootId]?LayerArray[rootId].children[arcId]:null;
       case 3:
         ['dakuten','handakuten','small'].forEach(key=> {
@@ -553,7 +664,7 @@ const Home = () => {
     return new ButtonElement({name: '', value: ''});
   }
 
-  function rescalePx(npx:number) {
+/*  function rescalePx(npx:number) {
     return 1/vmin*1*npx;
   }
 
@@ -689,10 +800,10 @@ const Home = () => {
     </CustomButton>;
     return { button, svg, svg2:'' };
   }
-
+*/
   type CustomButtonProps = {
     layer: number,
-    rawId: RawId,
+    rawId: number,
   };
 
   function idToRawId(id: number, layer: number) {
@@ -704,61 +815,64 @@ const Home = () => {
           (Number(id)+(20-offset))%len+offset
     );
   }
-
+  const CommentOut = () => {
+    return <></>
+  }
   const CustomButton = ({ children, layer, rawId, style, ...props }
-    : CustomButtonProps&React.ComponentProps<'button'> )=>{
+    : CustomButtonProps&React.ComponentProps<'button'> ) => {
 
-    const getUiElementTouched = (e: any, etype:string)=> {
-        if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
-        const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
-        if(etype === "end") {
-          touchPos.current = [-1,-1];
-          firstTouch.current = true;
-        }
-        if(element instanceof HTMLElement) {
-          const elementId = element.getAttribute('id');
-          if(elementId !== null) {
-            const [ _type, elmLayer, elmId ] = elementId.split('_');
-            uiTouched({
-              rawId: idToRawId(Number(elmId),Number(elmLayer)),
-              layer: Number(elmLayer), options: {
-                click: etype === "start" || firstTouch.current,
-                select: etype === "end",
-              }
-            })
-          }
-        }
-    }
+    //const getUiElementTouched = (e: any, etype:string) => {
+    //  if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
+    //  const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
+    //  if(etype === "end") {
+    //    touchPos.current = [-1,-1];
+    //    firstTouch.current = true;
+    //  }
+    //  if(element instanceof HTMLElement) {
+    //    const elementId = element.getAttribute('id');
+    //    if(elementId !== null) {
+    //      const [ _type, elmLayer, elmId ] = elementId.split('_');
+    //      uiTouched({
+    //        rawId: Number(elmId),
+    //        layer: Number(elmLayer), options: {
+    //          click: etype === "start" || firstTouch.current,
+    //          select: etype === "end",
+    //        }
+    //      })
+    //    }
+    //  }
+    //}
     const buttonRef = useRef<HTMLButtonElement>(null!);
-    const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
-
-    const handleTouchMove = (e:any)=>getUiElementTouched(e,"move");
-
-    const handleTouchEnd = (e:any)=>getUiElementTouched(e,"end");
+    //const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
+    //
+    //const handleTouchMove = (e:any)=>getUiElementTouched(e,"move");
+    //
+    //const handleTouchEnd = (e:any)=>getUiElementTouched(e,"end");
 
 
     useEffect(() => {
       const itemElement = buttonRef.current;
       //itemElement.RemoveAllListeners();
      // itemElement.addEventListener("touchstart", handleTouchStart, { passive: false });
-      itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
-      itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
+      //itemElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+      //itemElement.addEventListener("touchend", handleTouchEnd, { passive: false });
 
 
       return () => {
       };
     }, []);
 
-    const additionStyle:{[key: string]: string} = {}
+    //const additionStyle:{[key: string]: string} = {}
     /*if(touchedId.join(',') === [loopIndex(uiDivisionCounts[layer], rawId),layer].join(',')) {
       additionStyle.pointerEvents = 'none';
       console.log("events:none")
     }*/
+
     return (
        // 登録したイベントリスナーをrefを使って参照する
       <button ref={buttonRef}
         {...props}
-        style={{...style, ...additionStyle}}
+        style={{...style/*, ...additionStyle*/}}
         id={`btn_${layer}_${loopIndex(uiDivisionCounts[layer],rawId)}`}
       >
         {children}
@@ -766,7 +880,7 @@ const Home = () => {
     );
   }
 
-  function makeGradationBG(rgb:string,layer:number) {
+  /*function makeGradationBG(rgb:string,layer:number) {
     const R =
     UI_RING_WEIGHT_EACH_LAYER[layer][0]/
     UI_RING_WEIGHT_EACH_LAYER[layer][1]*0.8;
@@ -780,7 +894,7 @@ const Home = () => {
       }) ${p + (100-p)*R}%`
     ).join(",");
     return result;
-  }
+  }*/
   function changeLineTarget() {
     if(LINE_TARGETS_COUNT === 1 + lineTargetId) {
       setLineTargetId(0);
@@ -835,8 +949,8 @@ const Home = () => {
   function cursorPositionIs(i: number) {
     displayCursor(i-1, true, true);
   }
-  function makeTextWrapper(text: string) {
-    return text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`)).map((c,i)=> {
+  function makeTextWrapper(text: string, offset=0) {
+    return text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`)).filter(f=>f).map((c,i)=> {
       return <span style={{
         position: 'relative',
         width: 'fit-content',
@@ -847,12 +961,12 @@ const Home = () => {
         width: '50%',
         height: '100%',
         left: 0,
-      }} onClick={()=>cursorPositionIs(i)}></span><span style={{
+      }} onClick={()=>cursorPositionIs(offset+i)}></span><span style={{
         position: 'absolute',
         width: '50%',
         height: '100%',
         right: 0,
-      }} onClick={()=>cursorPositionIs(i+1)}></span></span>
+      }} onClick={()=>cursorPositionIs(offset+i+1)}></span></span>
     })
   }
   return (
@@ -862,14 +976,16 @@ const Home = () => {
         style={{background: LINE_TARGET_COLORS[lineTargetId]}}
         onClick={changeLineTarget}>送信先: {LINE_TARGET_NICKNAMES[lineTargetId]}</button>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
-            {makeTextWrapper(messageText+'|'+afterMessageText+'　'.repeat(16))}
+            {[...makeTextWrapper(messageText),'|',makeTextWrapper(afterMessageText+'　'.repeat(16), messageText.length)] }
         </span>
         <div className={styles.function_buttons}>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
-          <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
-          <button className={styles.right_ui_buttons}>自動文字変換</button>
-          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText)}>LINEに送る</button>
+          <CommentOut>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
+            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
+          </CommentOut>
+          <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText+afterMessageText)}>自動文字変換</button>
+          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText+afterMessageText)}>Discordに送る</button>
         </div>
         <br/>
         <div className={styles.left_bottom_ui_container}>
@@ -881,55 +997,137 @@ const Home = () => {
             const buttons = [
             ];
 
-            const svgs = [
-            ];
+            //const svgs = [
+            //];
 
-            const svg2s = [
-            ];
-
-            for(let i = 0;i < usingUI.length; i++) {
-              const using = usingUI[i];
-              for(let j = using.from;j < using.from + uiDivisionCounts[i];j++) {
-                const config:{[key:string]:any} = {
-                  layer: i,
-                  id: j,
-                  size: UI_RING_WEIGHT_EACH_LAYER[i][1],
-                  using: (using.from <= j) && (j < using.to)
-                }
-                switch(i) {
-                  case 1:
-                    break;
-                  case 2:
-                    if(config.using === true) {
-                      config.styleSettings = {};
-//                      config.styleSettings.zIndex = 5;
-                      const palletIndex = j-using.from;
-                      config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
-                      if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
-                        config.styleSettings.borderColor = pallet[palletIndex];
-                      } else {
-                        config.styleSettings.background =
-                          makeGradationBG(pallet[palletIndex],i);
-                      }
-                    }
-                    break;
-                  case 3:
-                    if(config.using === true) {
-                      config.styleSettings = {};
-                      //config.styleSettings.zIndex = -1;
-                    }
-                }
-
-                if(!getUiElementFromLayer(i,new RawId(j)))continue;
-                const { button, svg, svg2 } = makeButton(config);
-                buttons.push(button);
-                svgs.push(svg);
-                svg2s.push(svg2);
+            //const svg2s = [
+            //];
+            /**
+             * 濁点候補・半濁点候補がある場合は全て表示する
+             * あかさたなはまやらわー＞2段
+             * 濁点なし・濁点・半濁点ー＞３段
+             */
+            let buttonType = 0;
+            let buttonIndex = 0;
+            const buttonMatrixWidth = 5;
+            const buttonMatrixHeight = 3;
+            const decorationButtonCount = decorations_display.length;
+            const functionButtonCount = functions_display.length;
+            for(
+              let i = 0;
+              i <
+                buttonMatrixHeight * buttonMatrixWidth +
+                decorationButtonCount + functionButtonCount;
+              i++
+            ) {
+              if(
+                i === 2 * buttonMatrixWidth ||
+                i === 3 * buttonMatrixWidth ||
+                i === 3 * buttonMatrixWidth + decorationButtonCount
+              ) {
+                buttonType++;
+                buttonIndex = 0;
               }
+
+              const args = { layer: buttonType, rawId: buttonIndex, options: {
+                click: true
+              } };
+              const button =
+                <CustomButton
+                  layer={buttonType}
+                  rawId={buttonIndex}
+                  style={{
+                    backgroundColor:
+                    lastActivated.current[0] === buttonType &&
+                    lastActivated.current[1] === buttonIndex
+                    ? "#FFFF00"
+                    :ui_premise[buttonType].includes(lastActivated.current[0])
+                      ? buttonType === 2
+                        ? ( decoration_premise[buttonIndex].includes(messageText.slice(-1))
+                          ? '#FFFFFF'
+                          : '#999999'
+                        )
+                      : '#FFFFFF'
+                      : '#999999'
+                  }}
+                  className={`${styles.squre_button_item}`}
+                  onClick={()=>uiClicked(args)}
+                >
+                  <div>{
+                    buttonType === 0
+                      ? consonants_display[buttonIndex]+"行"
+                      : buttonType === 1
+                      ? (
+                          lastConsonantIndex.current !== -1
+                          ? hiraganaDict[lastConsonantIndex.current][buttonIndex]
+                          : '行を選択！'[buttonIndex]
+                        )
+                      : buttonType === 2
+                      ? decorations_display[buttonIndex]
+                      : functions_display[buttonIndex]
+                  }</div>
+                </CustomButton>;
+              buttons.push(button);
+              buttonIndex++;
             }
+            return buttons;
+            //for(let i = 0;i < usingUI.length; i++) {
+            //  const using = usingUI[i];
+            //  for(let j = using.from;j < using.from + using.to;j++) {
+            //    const config:{[key:string]:any} = {
+            //      layer: i,
+            //      id: j,
+            //      size: UI_RING_WEIGHT_EACH_LAYER[i][1],
+            //      using: (using.from <= j) && (j < using.to)
+            //    }
+            //    switch(i) {
+            //      case 1:
+            //        break;
+            //      case 2:
+            //        if(config.using === true) {
+            //          config.styleSettings = {};
+//          //            config.styleSettings.zIndex = 5;
+            //          const palletIndex = j-using.from;
+            //          config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
+            //          if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
+            //            config.styleSettings.borderColor = pallet[palletIndex];
+            //          } else {
+            //            config.styleSettings.background =
+            //              makeGradationBG(pallet[palletIndex],i);
+            //          }
+            //        }
+            //        break;
+            //      case 3:
+            //        if(config.using === true) {
+            //          config.styleSettings = {};
+            //          //config.styleSettings.zIndex = -1;
+            //        }
+            //    }
+//
+            //    if(!getUiElementFromLayer(i,new RawId(j)))continue;
+            //    //const button =
+            //    //    <CustomButton
+            //    //      layer={layer}
+            //    //      rawId={rawId}
+            //    //      className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+            //    //      ${styles[`input_ui_btn_${layer}_${id}`]}
+            //    //      ${using ? styles.ExpansionRing : '' }`
+            //    //      }
+            //    //      onClick={()=>uiClicked({ layer:layer, rawId:rawId, options: {
+            //    //        click: true
+            //    //      } })}
+            //    //    >
+            //    //      <div></div>
+            //    //    </CustomButton>;
+            //    const { button, svg, svg2 } = makeButton(config);
+            //    buttons.push(button);
+            //    svgs.push(svg);
+            //    svg2s.push(svg2);
+            //  }
+            //}
 
 
-            return [...svgs,...svg2s,...buttons,];
+            //return [...svgs,...svg2s,...buttons,];
           })()
         }
       </div>
