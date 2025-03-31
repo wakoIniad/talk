@@ -84,14 +84,20 @@ const pallet2 = [
   //const characters: string =
   //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
   //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
-const vowels_display: string[] =
-  "あ,い,う,え,お".split(',');
-const vowels: string[] = "aiueo".split('');
+//const vowels_display: string[] =
+//  "あ,い,う,え,お".split(',');
+//const vowels: string[] = "aiueo".split('');
 const consonants_display: string[] = "あ,か,さ,た,な,は,ま,や,ら,わ+ん".split(',');
-const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
-const decorations: string = "゛゜小";
-const functions_display: string[] = "削除".split(',');
-
+//const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
+const decorations: string = "゛゜";
+const decorations_display: string = "゛゜";
+const functions_display: string[] = "削除,小".split(',');
+const ui_premise = [
+  [-1,0,1,2],
+  [0],
+  [1],
+  [-1,0,1,2]
+];
 const hiraganaDict = [
   'あいうえお',
   'かきくけこ',
@@ -154,6 +160,7 @@ function LineTextParser(text:string) {
 
 const Home = () => {
   const [ _ , UpdateApp ] = useState([])
+  const lastActivated = useRef([-1,-1]);
 
   const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
@@ -252,15 +259,22 @@ const Home = () => {
     if(type === 0) {//consonant
       lastConsonantIndex.current = index;
       UpdateApp([]);
+
+      lastActivated.current[0] = 0;
+      lastActivated.current[1] = index;
     } else if(type === 1) {//vowel
       if(lastConsonantIndex.current !== -1) {
         const addingHiragana =
           hiraganaDict[lastConsonantIndex.current][index];
         setMssageText( messageText + addingHiragana );
       }
-      lastConsonantIndex.current = -1;
+
+      lastActivated.current[0] = 1;
+      lastActivated.current[1] = index;
     } else if(type === 2) {//decoration
       setMssageText( messageText + decorations[index] );
+      lastActivated.current[0] = -1;
+      lastActivated.current[1] = index;
     } else if(type === 3) {//functions
       switch(index) {
         case 0://delete
@@ -818,6 +832,7 @@ const Home = () => {
       additionStyle.pointerEvents = 'none';
       console.log("events:none")
     }*/
+
     return (
        // 登録したイベントリスナーをrefを使って参照する
       <button ref={buttonRef}
@@ -959,8 +974,8 @@ const Home = () => {
             let buttonIndex = 0;
             const buttonMatrixWidth = 5;
             const buttonMatrixHeight = 3;
-            const decorationButtonCount = 3;
-            const functionButtonCount = 1;
+            const decorationButtonCount = decorations_display.length;
+            const functionButtonCount = functions_display.length;
             for(
               let i = 0;
               i <
@@ -984,6 +999,15 @@ const Home = () => {
                 <CustomButton
                   layer={buttonType}
                   rawId={buttonIndex}
+                  style={{
+                    backgroundColor:
+                    lastActivated.current[0] === buttonType &&
+                    lastActivated.current[1] === buttonIndex
+                    ? "#FFFF00"
+                    :ui_premise[buttonType].includes(lastActivated.current[0])
+                      ? '#FFFFFF'
+                      : '#999999'
+                  }}
                   className={`${styles.squre_button_item}`}
                   onClick={()=>uiClicked(args)}
                 >
@@ -997,7 +1021,7 @@ const Home = () => {
                           : '行を選択！'[buttonIndex]
                         )
                       : buttonType === 2
-                      ? decorations[buttonIndex]
+                      ? decorations_display[buttonIndex]
                       : functions_display[buttonIndex]
                   }</div>
                 </CustomButton>;
