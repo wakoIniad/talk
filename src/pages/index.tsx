@@ -84,13 +84,26 @@ const pallet2 = [
   //const characters: string =
   //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
   //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
-const vowels_display: string =
-  "あいうえお"
+const vowels_display: string[] =
+  "あ,い,う,え,お".split(',');
 const vowels: string[] = "aiueo".split('');
-const consonants_display: string = "あかさたなはまやらわ";
+const consonants_display: string[] = "あ,か,さ,た,な,は,ま,や,ら,わ+ん".split(',');
 const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
-const functions_display: string = "削除".split(',');
+const functions_display: string[] = "削除".split(',');
+
+const hiraganaDict = [
+  'あいうえお',
+  'かきくけこ',
+  'さしすえそ',
+  'たちつてと',
+  'なにぬねの',
+  'はひふへほ',
+  'まみむめも',
+  'や_ゆ_よ',
+  'らりるれろ',
+  'わ_を_ん'
+]
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -157,7 +170,7 @@ const Home = () => {
   const [ cursorPosition, setCursorPosition ] = useState(0);// 注意： 最後のインデックスから逆方向に0, 1, 2と振られる！
   let updateMessageText:string = messageText;
   //const lastClickId = useRef([-1,-1]);
-  const lastConsonant = useRef("");
+  const lastConsonantIndex = useRef(-1);
 
   const LayerArray = uiInputSets[uiInputMode]
 
@@ -237,15 +250,15 @@ const Home = () => {
 
   function newUiHandler(type: number, index: number) {
     if(type === 0) {//consonant
-      lastConsonant.current = consonants[index];
+      lastConsonantIndex.current = index;
+      UpdateApp([]);
     } else if(type === 1) {//vowel
-
-      if(lastConsonant.current) {
+      if(lastConsonantIndex.current !== -1) {
         const addingHiragana =
-          Hiraganizer( lastConsonant.current.replace(" ","") + vowels[index] );
+          hiraganaDict[lastConsonantIndex.current][index];
         setMssageText( messageText + addingHiragana );
       }
-      lastConsonant.current = "";
+      lastConsonantIndex.current = -1;
     } else if(type === 2) {//decoration
       setMssageText( messageText + decorations[index] );
     } else if(type === 3) {//functions
@@ -978,7 +991,11 @@ const Home = () => {
                     buttonType === 0
                       ? consonants_display[buttonIndex]+"行"
                       : buttonType === 1
-                      ? vowels_display[buttonIndex]
+                      ? (
+                          lastConsonantIndex.current !== -1
+                          ? hiraganaDict[lastConsonantIndex.current][buttonIndex]
+                          : '行を選択！'[buttonIndex]
+                        )
                       : buttonType === 2
                       ? decorations[buttonIndex]
                       : functions_display[buttonIndex]
