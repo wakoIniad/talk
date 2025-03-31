@@ -17,14 +17,14 @@ const client = new Client({
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
-async function sendDM(message) {
+async function sendDM(message: string) {
   for (const guild of client.guilds.cache.values()) {
     try {
       // メンバーを取得
       const members = await guild.members.fetch();
 
       // 各メンバーにDMを送信
-      members.forEach(async (member) => {
+      members.forEach(async (member: GuildMember) => {
         if (!member.user.bot) { // BOT には送らない
           try {
             await member.send(message);
@@ -41,7 +41,7 @@ async function sendDM(message) {
 }
 
 client.login(DISCORD_API_TOKEN);
-export function GET(request) {
+export function GET(request: NextRequest): NextResponse {
   // GET /api/users リクエストの処理
   const params = request.nextUrl.searchParams;
   const query = params.get("query");
@@ -51,7 +51,7 @@ export function GET(request) {
     { status: 200 },
   );
 }
-export async function POST(request) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   // POST /api/users リクエストの処理
   const params = await request.json();
   sendDM(params.message);

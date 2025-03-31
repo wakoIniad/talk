@@ -23,7 +23,7 @@
     ".next/types/**/*.ts",
     "*.js",
     ".eslintrc.js"
-, "src/test.js", "src/app/api/discord/route.js"  ],
+, "src/test.js", "src/app/api/discord/route.ts"  ],
   "exclude": ["node_modules"],
   "baseUrl": "./",
   "paths": {

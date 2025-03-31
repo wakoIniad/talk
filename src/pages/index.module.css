@@ -16,17 +16,21 @@
   height: 100vh;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
   font-family: "UD デジタル 教科書体 N-R", "BIZ UDゴシック Regular", "Hiragino Kaku Gothic ProN", "ascii";
+  touch-action: none;
+  background-color: rgb(230, 230, 230);
+  position: relative;
 }
 
 .input_ui_container {
-  width: 100vmin;
+  width: 133.3333333333vmin;
+  max-width: calc(100vw - 0px);
   height: 100vmin;
-  position: fixed;
-  display: flex;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr) 0.75fr;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -37,7 +41,6 @@
   background: rgb(220, 220, 220);
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   z-index: 3;
   border-style: none;
   filter: drop-shadow(0px 0px 100px #999);
@@ -116,13 +119,34 @@
 /**
  * Non-control UI
 */
+.line_change_target_btn {
+  width: 100%;
+  height: 5em;
+  padding: 0;
+  display: block;
+  pointer-events: auto;
+  margin: auto;
+}
+
+.message_text {
+  color: rgb(255, 208, 80);
+  width: 100%;
+  display: block;
+  padding: 10px;
+}
+
 .message_display {
+  display: inline-block;
   background: linear-gradient(to right, rgba(200, 200, 200, 0.8), rgba(200, 200, 200, 0.1), rgba(200, 200, 200, 0.8));
   text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
+  flex-grow: 1;
   height: 95%;
-  width: 20%;
-  position: absolute;
-  left: 1em;
+  min-width: 0px;
+  max-width: 20%;
+  margin-left: 16px;
+  margin-right: 64px;
+  margin-block: auto;
+  position: relative;
   font-weight: bold;
   overflow-wrap: break-word;
   font-size: 3em;
@@ -130,24 +154,25 @@
   z-index: 10;
 }
 
-.message_text {
-  color: rgb(255, 208, 80);
-  width: 100%;
-  height: calc(100% - 5em);
-  top: 0;
+.function_buttons {
   position: absolute;
-  padding: 10px;
+  width: 100%;
+  height: -moz-fit-content;
+  height: fit-content;
+  bottom: 0;
+}
+
+.line_change_target_btn, .function_buttons button {
+  font-size: 24px;
+  height: 64px;
 }
 
 .line_button {
   width: 100%;
   height: 5em;
   background-color: rgb(6, 199, 85);
-  position: absolute;
-  bottom: 0;
   font-size: 16px;
   text-align: center;
-  display: flex;
   flex-direction: column;
   justify-content: center;
   pointer-events: auto;
@@ -169,4 +194,34 @@
 
 /**
  * post-processing of SCSS
-*//*# sourceMappingURL=index.module.css.map */
+*/
+.right_ui_buttons {
+  height: 5em;
+  display: block;
+  width: 95%;
+  margin: auto;
+  pointer-events: auto;
+}
+
+.cursor_ui_buttons {
+  display: inline-block;
+  width: 50%;
+  height: 4em;
+}
+
+.left_bottom_ui_container {
+  position: absolute;
+  width: 100%;
+  height: 3em;
+  bottom: 0;
+}
+
+.cursor_ui_buttons {
+  pointer-events: auto;
+}
+
+.squre_button_item {
+  width: 100%;
+  height: 100%;
+  font-size: xx-large;
+}/*# sourceMappingURL=index.module.css.map */
