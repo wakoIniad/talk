@@ -41,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     } else {
       console.error('予期しないエラー',e);
-      console.log(params,LINE_ACCESS_TOKEN);
+      console.log(params,LINE_ACCESS_TOKENS);
       return NextResponse.json(
         { response: "error" },
         { status: 500 },

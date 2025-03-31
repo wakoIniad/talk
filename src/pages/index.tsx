@@ -245,7 +245,7 @@ const Home = () => {
       'headers': { "Content-Type": "application/json" },
       'body': JSON.stringify({ 'message': `${LineTextParser(message)}\nAI自動変換後：${converted}`, 'target': lineTargetId }),
     };
-    const res = await fetch('/api/line',config)
+    const res = await fetch('/api/discord',config)
     setMssageText("");
     console.log("送信されました～",config);
     console.info(res);
