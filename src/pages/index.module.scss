@@ -37,14 +37,17 @@
   position: relative;
 }
 
+$decoration_ui_width: 300px;
 .input_ui_container {
-
-  //display: inline-block;
-  width:100vmin;
-  height:100vmin;
+  min-width: calc( 100vmin / 3 * 4);
+//  width:calc(100% - $decoration_ui_width);
+  height: calc( ( 100vmin  / 3 * 4) / 5 * 3);
   position: relative;
 
-  display: inline-flex;
+  //display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -56,7 +59,7 @@
   background: rgb(220,220,220);
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+//  border-radius: 50%;
 
   z-index: 3;
 
@@ -253,4 +256,11 @@
 
 .cursor_ui_buttons {
   pointer-events: auto;
+}
+
+.squre_button_item {
+  //display: flex;
+  //flex-grow: 1;
+  width: 100%;
+  height: 100%;
 }

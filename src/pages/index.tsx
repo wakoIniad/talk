@@ -109,8 +109,8 @@ const LayerArray_numbers = new ButtonLayers(...'0123456789'.split('').map(n=>
 
 const uiInputSets = [LayerArray_hiragana,LayerArray_numbers]
 
-function loopIndex( length: number, raw: RawId ):number {
-  return (length + raw.parse())%length;
+function loopIndex( length: number, raw: number ):number {
+  return (length + raw)%length;
 }
 
 const initialUsingCenterUi:{[key:string]: ButtonElement}= {
@@ -237,7 +237,7 @@ const Home = () => {
   }
 
   interface uiHandlerInterface {
-    rawId: RawId, layer: number,
+    rawId: number, layer: number,
     options?: {
       click?: boolean,
       select?: boolean,
@@ -278,7 +278,7 @@ const Home = () => {
 
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     if(click || select)console.log(id, rawId, layer, usingUI[layer]);
-    const inputElm = getUiElementFromLayer(layer,rawId);
+    const inputElm = getUiElementFromLayer(layer, rawId);
 
     updateMessageText = messageText;
     switch(layer) {
@@ -508,7 +508,12 @@ const Home = () => {
 
     return useOpt;
   }
-
+  //const characters: string =
+  //  "あいうえお\nかきくけこ\nさしすせそ\nたちつてと\nなにぬねの\nはひふへほ\n"+
+  //  "まみむめも\nや゛ゆ゜よ\nらりるれろ\nわ小を_ん";
+  const characters: string =
+    "あかさたなはまやらわ\n"+
+    "あいうえお";
   interface makeButtonInterFace {
     layer: number;
     id: number;
@@ -517,7 +522,7 @@ const Home = () => {
     styleSettings?: {[key:string]:any}
   }
 
-  function getUiElementFromLayer(layer: number, rawId: RawId):ButtonElement {
+  function getUiElementFromLayer(layer: number, rawId: number):ButtonElement {
 
     const id = loopIndex(uiDivisionCounts[layer], rawId);
     const usableOptions:Array<string> = [];
@@ -545,7 +550,7 @@ const Home = () => {
         return LayerArray[id];
       case 2:
         const rootId = activeButtons[1];
-        const arcId = rawId.parse() - usingUI[2].from;
+        const arcId = rawId - usingUI[2].from;
         return LayerArray[rootId]?LayerArray[rootId].children[arcId]:null;
       case 3:
         ['dakuten','handakuten','small'].forEach(key=> {
@@ -581,7 +586,7 @@ const Home = () => {
             'space':'空','delete':'削',
     }?.[name] || '';
   }
-
+/*
   function makeButton( {
     layer = -1,
     id = -1,
@@ -706,10 +711,10 @@ const Home = () => {
     </CustomButton>;
     return { button, svg, svg2:'' };
   }
-
+*/
   type CustomButtonProps = {
     layer: number,
-    rawId: RawId,
+    rawId: number,
   };
 
   function idToRawId(id: number, layer: number) {
@@ -723,28 +728,28 @@ const Home = () => {
   }
 
   const CustomButton = ({ children, layer, rawId, style, ...props }
-    : CustomButtonProps&React.ComponentProps<'button'> )=>{
+    : CustomButtonProps&React.ComponentProps<'button'> ) => {
 
-    const getUiElementTouched = (e: any, etype:string)=> {
-        if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
-        const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
-        if(etype === "end") {
-          touchPos.current = [-1,-1];
-          firstTouch.current = true;
+    const getUiElementTouched = (e: any, etype:string) => {
+      if(e.touches.length) touchPos.current = [e.touches[0].clientX,e.touches[0].clientY];
+      const element = document.elementFromPoint(touchPos.current[0],touchPos.current[1]);
+      if(etype === "end") {
+        touchPos.current = [-1,-1];
+        firstTouch.current = true;
+      }
+      if(element instanceof HTMLElement) {
+        const elementId = element.getAttribute('id');
+        if(elementId !== null) {
+          const [ _type, elmLayer, elmId ] = elementId.split('_');
+          uiTouched({
+            rawId: Number(elmId),
+            layer: Number(elmLayer), options: {
+              click: etype === "start" || firstTouch.current,
+              select: etype === "end",
+            }
+          })
         }
-        if(element instanceof HTMLElement) {
-          const elementId = element.getAttribute('id');
-          if(elementId !== null) {
-            const [ _type, elmLayer, elmId ] = elementId.split('_');
-            uiTouched({
-              rawId: idToRawId(Number(elmId),Number(elmLayer)),
-              layer: Number(elmLayer), options: {
-                click: etype === "start" || firstTouch.current,
-                select: etype === "end",
-              }
-            })
-          }
-        }
+      }
     }
     const buttonRef = useRef<HTMLButtonElement>(null!);
     const handleTouchStart = (e:any)=>getUiElementTouched(e,"start");
@@ -898,55 +903,102 @@ const Home = () => {
             const buttons = [
             ];
 
-            const svgs = [
-            ];
+            //const svgs = [
+            //];
 
-            const svg2s = [
-            ];
-
-            for(let i = 0;i < usingUI.length; i++) {
-              const using = usingUI[i];
-              for(let j = using.from;j < using.from + uiDivisionCounts[i];j++) {
-                const config:{[key:string]:any} = {
-                  layer: i,
-                  id: j,
-                  size: UI_RING_WEIGHT_EACH_LAYER[i][1],
-                  using: (using.from <= j) && (j < using.to)
-                }
-                switch(i) {
-                  case 1:
-                    break;
-                  case 2:
-                    if(config.using === true) {
-                      config.styleSettings = {};
-//                      config.styleSettings.zIndex = 5;
-                      const palletIndex = j-using.from;
-                      config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
-                      if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
-                        config.styleSettings.borderColor = pallet[palletIndex];
-                      } else {
-                        config.styleSettings.background =
-                          makeGradationBG(pallet[palletIndex],i);
-                      }
-                    }
-                    break;
-                  case 3:
-                    if(config.using === true) {
-                      config.styleSettings = {};
-                      //config.styleSettings.zIndex = -1;
-                    }
-                }
-
-                if(!getUiElementFromLayer(i,new RawId(j)))continue;
-                const { button, svg, svg2 } = makeButton(config);
-                buttons.push(button);
-                svgs.push(svg);
-                svg2s.push(svg2);
+            //const svg2s = [
+            //];
+            /**
+             * 濁点候補・半濁点候補がある場合は全て表示する
+             * あかさたなはまやらわー＞2段
+             * 濁点なし・濁点・半濁点ー＞３段
+             */
+            let buttonType = 0;
+            let buttonIndex = 0;
+            const buttonMatrixWidth = 5;
+            const buttonMatrixHeight = 3;
+            for(let i = 0;i < buttonMatrixHeight * buttonMatrixWidth; i++) {
+              if(
+                i === 2 * buttonMatrixWidth ||
+                //i === 3 * buttonMatrixWidth ||
+                //i === 4 * buttonMatrixWidth
+              ) {
+                buttonType++;
+                buttonIndex = 0;
               }
+
+              const button =
+                <CustomButton
+                  layer={buttonType}
+                  rawId={buttonIndex}
+                  className={`${styles.squre_button_item}`}
+                  onClick={()=>uiClicked({ layer: buttonType, rawId: buttonIndex, options: {
+                    click: true
+                  } })}
+                >
+                  <div>a</div>
+                </CustomButton>;
+              buttons.push(button);
+              buttonIndex++;
             }
+            return buttons;
+            //for(let i = 0;i < usingUI.length; i++) {
+            //  const using = usingUI[i];
+            //  for(let j = using.from;j < using.from + using.to;j++) {
+            //    const config:{[key:string]:any} = {
+            //      layer: i,
+            //      id: j,
+            //      size: UI_RING_WEIGHT_EACH_LAYER[i][1],
+            //      using: (using.from <= j) && (j < using.to)
+            //    }
+            //    switch(i) {
+            //      case 1:
+            //        break;
+            //      case 2:
+            //        if(config.using === true) {
+            //          config.styleSettings = {};
+//          //            config.styleSettings.zIndex = 5;
+            //          const palletIndex = j-using.from;
+            //          config.styleSettings.opacity = 1-(((palletIndex-2)**2)**0.25)/4;
+            //          if(loopIndex(uiDivisionCounts[i], new RawId(j)) == activeButtons[2]) {
+            //            config.styleSettings.borderColor = pallet[palletIndex];
+            //          } else {
+            //            config.styleSettings.background =
+            //              makeGradationBG(pallet[palletIndex],i);
+            //          }
+            //        }
+            //        break;
+            //      case 3:
+            //        if(config.using === true) {
+            //          config.styleSettings = {};
+            //          //config.styleSettings.zIndex = -1;
+            //        }
+            //    }
+//
+            //    if(!getUiElementFromLayer(i,new RawId(j)))continue;
+            //    //const button =
+            //    //    <CustomButton
+            //    //      layer={layer}
+            //    //      rawId={rawId}
+            //    //      className={`${styles.input_ui_btn} ${styles[`input_ui_btn_${layer}`]}
+            //    //      ${styles[`input_ui_btn_${layer}_${id}`]}
+            //    //      ${using ? styles.ExpansionRing : '' }`
+            //    //      }
+            //    //      onClick={()=>uiClicked({ layer:layer, rawId:rawId, options: {
+            //    //        click: true
+            //    //      } })}
+            //    //    >
+            //    //      <div></div>
+            //    //    </CustomButton>;
+            //    const { button, svg, svg2 } = makeButton(config);
+            //    buttons.push(button);
+            //    svgs.push(svg);
+            //    svg2s.push(svg2);
+            //  }
+            //}
 
 
-            return [...svgs,...svg2s,...buttons,];
+            //return [...svgs,...svg2s,...buttons,];
           })()
         }
       </div>
