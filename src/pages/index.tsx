@@ -57,7 +57,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
   {from: 0, to: 0},
 ];
-const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行,ら行,わ+ん行".split(',');
+const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行,ら行,わ-ん行".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
 const decorations_display: string = "゛゜小";
