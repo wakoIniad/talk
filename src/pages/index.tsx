@@ -57,7 +57,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
   {from: 0, to: 0},
 ];
-const consonants_display: string[] = "あ,か,さ,た,な,は,ま,や,ら,わ+ん".split(',');
+const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行?!,ら行,わん行ー。".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
 const decorations_display: string = "゛゜小";
@@ -81,7 +81,7 @@ const hiraganaDict = [
   'なにぬねの',
   'はひふへほ',
   'まみむめも',
-  'や？ゆ！よ',
+  'や❓ゆ❕よ',
   'らりるれろ',
   ['わ','😀','を','😢','ん']
 ]
@@ -100,7 +100,7 @@ const emojies: string[] =
 [
   //'0,1,2,3,4,5,6,7,8,9,'+
   '👍','👎','👈','👉','👆',
-  '👇','🤣','','','',
+  '👇','😀','😢','🤣','',
   '','','','','',
   '','','',''
 ];
@@ -539,7 +539,7 @@ const Home = () => {
                         ? emojies[buttonIndex]
                         : emojiFunctions[buttonIndex]
                       :buttonType === 0
-                        ? consonants_display[buttonIndex]+"行"
+                        ? consonants_display[buttonIndex]
                         : buttonType === 1
                         ? (
                             lastConsonantIndex.current !== -1
