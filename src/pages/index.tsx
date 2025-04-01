@@ -57,7 +57,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
   {from: 0, to: 0},
 ];
-const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行?!,ら行,わん行ー。".split(',');
+const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行,ら行,わ+ん行".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 const decorations: string = "゛゜小";
 const decorations_display: string = "゛゜小";
@@ -81,9 +81,9 @@ const hiraganaDict = [
   'なにぬねの',
   'はひふへほ',
   'まみむめも',
-  'や❓ゆ❕よ',
+  'や？ゆ！よ',
   'らりるれろ',
-  ['わ','😀','を','😢','ん']
+  ['わ','ー','を','。','ん']
 ]
 const lowerHiraganaDict = {
   'つ':'っ',
@@ -104,7 +104,7 @@ const emojies: string[] =
   '','','','','',
   '','','',''
 ];
-const emojiFunctions = '戻る'.split(',');
+const emojiFunctions = '削除,戻る'.split(',');
 
 const LayerArray_hiragana = new ButtonLayers(...['', ...'kstnhmyr'.split('')]
   .map(consonant=>'aiueo'.split('')
@@ -161,7 +161,7 @@ const Home = () => {
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
   const [messageText, setMssageText] = useState('');
-  const [afterMessageText, setAfterMssageText] = useState('');
+  const [afterMessageText, setAfterMessageText] = useState('');
   const sendingNow = useRef(false);
   const touchedId = useRef([-1,-1]);
   const uiGenerated = useRef(false);
@@ -192,8 +192,11 @@ const Home = () => {
   }
 
   async function messageTextConverter(messageText: string){
-    const result = await gptConverter(messageText)
-    setMssageText(result)
+    const result = await gptConverter(messageText);
+    //displayCursor(cursorPosition, result);
+    setMssageText(result);
+    setAfterMessageText("");
+    setCursorPosition(0);
   }
 
 
@@ -239,8 +242,15 @@ const Home = () => {
       lastActivated.current[1] = index;
       if(type === 0) {
         setMssageText( messageText + emojies[index] );
-      } else if(type === 1 && index === 0) {
-        setEmojiMode(!emojiMode);
+      } else if(type === 1) {
+        switch(index) {
+          case 0:
+            setMssageText(Array.from(messageText).slice(0,-1));
+            break;
+          case 1:
+            setEmojiMode(!emojiMode);
+            break;
+        }
       }
       return;
     }
@@ -268,9 +278,9 @@ const Home = () => {
           setMssageText( messageText + '゜' );
           break;
         case 2:
-          const c = messageText.slice(-1);
+          const c = Array.from(messageText).slice(-1);
           setMssageText(
-            messageText.slice(0,-1) +
+            Array.from(messageText).slice(0,-1).join('') +
 
             (lowerHiraganaDict?.[c] ?? c)
 
@@ -396,28 +406,26 @@ const Home = () => {
     releaseUiLayerOver(1)
     setUiInputMode(mode)
   }
+  function splitAtCursor(fullText: string) {
 
+  }
   function displayCursor(
     nextCursorPosition: number,
-    reverseIndex?: boolean,
-    positiveIsOpen?: boolean,
+    fullText: string = messageText + afterMessageText
   ) {
-    const fullText = messageText + afterMessageText;
-    if(reverseIndex) nextCursorPosition = fullText.length - 1 - nextCursorPosition
+    nextCursorPosition = fullText.length - 1 - nextCursorPosition
     //const nextCursorPosition = ;
     const l = fullText.length+1;
-    const cursor = positiveIsOpen
-      ? Math.min(nextCursorPosition, fullText.length)
-      : (l+(nextCursorPosition%l))%l;
+    const cursor = Math.min(nextCursorPosition, fullText.length)
     const firstHalf = fullText.slice(0,fullText.length-cursor);
     const lastHalf = fullText.slice(fullText.length-cursor);
     setCursorPosition(cursor);
     setMssageText(firstHalf);
-    setAfterMssageText(lastHalf);
+    setAfterMessageText(lastHalf);
 
   }
   function cursorPositionIs(i: number) {
-    displayCursor(i-1, true, true);
+    displayCursor(i-1);
   }
   function makeTextWrapper(text: string, offset=0) {
     //return //text.split(new RegExp(`(?<=.)(?!(${decoChars.map(c=>`[${c}]`).join('|')}))`))
@@ -495,7 +503,7 @@ const Home = () => {
               i++
             ) {
               if(emojiMode) {
-                if(buttonIndex === buttonCount-1) {
+                if(buttonIndex === buttonCount-emojiFunctions.length) {
                   buttonType++;
                   buttonIndex = 0;
                 }
