@@ -10,10 +10,6 @@ import React, { useState, useEffect, useRef, ReactNode } from 'react';
 
 import styles from './index.module.scss';
 
-const Romanizer = require('js-hira-kata-romanize');
-const r = new Romanizer({
-  chouon: Romanizer.CHOUON_ALPHABET
-});
 
 import Hiraganizer from './romaji-hira-convert';
 import { ButtonLayers, ButtonElement } from './layer-ui'

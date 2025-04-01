@@ -21,7 +21,6 @@
     "@langchain/core": "^0.3.11",
     "@langchain/openai": "^0.3.7",
     "axios": "^1.7.7",
-    "discord.js": "^14.18.0",
     "js-hira-kata-romanize": "^1.0.5",
     "langchain": "^0.3.2",
     "mysql": "^2.18.1",
@@ -30,8 +29,7 @@
     "openai": "^4.67.3",
     "python-shell": "^5.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "zlib-sync": "^0.1.9"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
