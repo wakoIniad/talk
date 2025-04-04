@@ -18,7 +18,7 @@ import { ButtonLayers, ButtonElement } from './layer-ui'
 import localfont from "next/font/local";
 import { exitCode, off, send } from 'process';
 
-const LINE_TARGET_NICKNAMES = [ "和田家", "\n友達（※未設定）" ]
+const LINE_TARGET_NICKNAMES = [ "和田家", "\n友達" ]
 const LINE_TARGET_COLORS = [ "#89BDDE", "#f8b500" ]
 
 const DAKUTEN_UNICODE:string = "\u{3099}"; //濁点
