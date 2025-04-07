@@ -157,6 +157,7 @@ const Home = () => {
   const [ _ , UpdateApp ] = useState([])
   const lastActivated = useRef([-1,-1]);
 
+  const [ inputtingWord, setInputtingWord ] = useState("");
   const [ lineTargetId, setLineTargetId ] = useState(0);//0: family, 1: friend
   const [usingUI, setUsingUI] = useState(usingUiInitial);
   const [activeButtons, setActiveButtons] = useState([-1,-1,-1,-1]);
@@ -245,7 +246,7 @@ const Home = () => {
       } else if(type === 1) {
         switch(index) {
           case 0:
-            setMssageText(Array.from(messageText).slice(0,-1));
+            setMssageText(Array.from(messageText).slice(0,-1).join(""));
             break;
           case 1:
             setEmojiMode(!emojiMode);
