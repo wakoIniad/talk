@@ -47,11 +47,11 @@ async function sendMessageProcess(message) {
         console.error('Error:', error);
     }
 };
-const BROADCAST_CHANNEL_NAME = "和田家";
-async function broadcastMessage(message) {
+const guildIds = ["1356362520062988480","1356651874572435759"]
+async function broadcastMessage(message, target) {
   const guilds = await GetServerChannels();
   for(const guild of guilds) {
-    if(guild.guildId === "1356362520062988480") {
+    if(guild.guildId === target) {
       for(const channel of guild.channels) {
         if(channel.name === "受信用") {
           sendMessage(channel.id, message);
@@ -74,7 +74,7 @@ export async function POST(request) {
   // POST /api/users リクエストの処理
   try {
     const params = await request.json();
-    broadcastMessage(params.message);
+    broadcastMessage(params.message, guildIds[params.target]);
     return NextResponse.json(
       { response: "success" },
       { status: 200 },
