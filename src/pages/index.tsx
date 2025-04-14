@@ -529,7 +529,7 @@ const Home = () => {
                     backgroundColor:
                     lastActivated.current[0] === buttonType &&
                     lastActivated.current[1] === buttonIndex
-                    ? "#FFFF00"
+                    ? "#000000"
                     :ui_premise[buttonType].includes(lastActivated.current[0])
                       ? buttonType === 2
                         ? ( decoration_premise[buttonIndex].includes(messageText.slice(-1))
@@ -537,7 +537,11 @@ const Home = () => {
                           : '#999999'
                         )
                       : '#FFFFFF'
-                      : '#999999'
+                      : '#999999',
+                    color:
+                    lastActivated.current[0] === buttonType &&
+                    lastActivated.current[1] === buttonIndex
+                    ? "#FFFFFF" : "#000000"
                   }}
                   className={`${styles.squre_button_item}`}
                   onClick={()=>uiClicked(args)}
