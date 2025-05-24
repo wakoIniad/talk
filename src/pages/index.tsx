@@ -261,11 +261,13 @@ const Home = () => {
 
       lastActivated.current[0] = 0;
       lastActivated.current[1] = index;
+
     } else if(type === 1) {//vowel
       if(lastConsonantIndex.current !== -1) {
         const addingHiragana =
           hiraganaDict[lastConsonantIndex.current][index];
         setMssageText( messageText + addingHiragana );
+        lastConsonantIndex.current = 0;
       }
 
       lastActivated.current[0] = 1;
@@ -289,7 +291,7 @@ const Home = () => {
           break;
       }
 
-      lastActivated.current[0] = -1;
+      lastActivated.current[0] = 0;
       lastActivated.current[1] = index;
     } else if(type === 3) {//functions
       switch(index) {
@@ -457,18 +459,13 @@ const Home = () => {
         onClick={changeLineTarget}>送信先: {
           LINE_TARGET_NICKNAMES[lineTargetId].split('\n').map(name=>[name, <br></br>])
         }</button>
+
+          <CommentOut><button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText+afterMessageText)}>自動文字変換</button>
+</CommentOut>
         <span style={{pointerEvents:'none'}} className={`${styles.message_text}`}>
             {[...makeTextWrapper(messageText),'|',makeTextWrapper(afterMessageText+'　'.repeat(16), messageText.length)] }
         </span>
-        <div className={styles.function_buttons}>
-          <CommentOut>
-            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(0)}>ひらがな</button>
-            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(1)}>数字</button>
-            <button className={styles.right_ui_buttons} onClick={()=>uiInputModeSetter(2)}>登録単語</button>
-          </CommentOut>
-          <button className={styles.right_ui_buttons} onClick={()=>messageTextConverter(messageText+afterMessageText)}>自動文字変換</button>
-          <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText+afterMessageText)}>Discordに送る</button>
-        </div>
+        <button className={`${styles.line_button}`} onClick={()=>sendToLine(messageText+afterMessageText)}>Discordに送る</button>
         <br/>
         <div className={styles.left_bottom_ui_container}>
         </div>

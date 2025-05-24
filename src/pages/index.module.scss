@@ -23,6 +23,7 @@
 */
 .container {
   height: 100vh;
+  width: 100vw;
   min-height: 100vh;
   //display: flex;
   //flex-direction: row;
@@ -50,13 +51,14 @@ $message_text_display_width: 0px;
   position: relative;
 
   //display: inline-flex;
-  display: inline-grid;
+  display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(3, 1fr) 0.75fr;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   bottom: 0;
+  margin: auto;
 }
 
 .input_ui_btn {
@@ -130,12 +132,22 @@ $message_text_display_width: 0px;
 
 
 .line_change_target_btn {
-  width: 100%;
-  height: 5em;
+  width: 9%;
+  height: 100%;
   padding: 0;
-  display: block;
+  display: inline-block;
   pointer-events: auto;
-  margin: auto;
+  margin: 0px;
+}
+
+
+.right_ui_buttons {
+  height:100%;
+  display: inline-block;
+  width: 5%;
+  margin: 0;
+  padding: 0;
+  pointer-events:auto;
 }
 
 
@@ -143,14 +155,15 @@ $message_text_display_width: 0px;
   //color: rgb(255, 208, 80);
   //color: rgb(255, 208, 80);
   color: rgb(0,0,0);
-  width: 100%;
+  width: 80%;
   //height: calc(100% - 10em);
-  display: block;
-  padding: 10px;
+  display: inline-block;
+  margin: 0px;
+  height: 100%;
 }
 
 .message_display {
-  display: inline-block;
+  display: block;
   //background-color: rgba(200,200,200,0.8);
   background: linear-gradient(to right,
     rgba(200,200,200,0.8),
@@ -160,16 +173,11 @@ $message_text_display_width: 0px;
   text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
   flex-grow: 1;
   height: calc((100vmin  / 3 * 4 ) / 5 * 0.75 * 0.9 );
-  width: 100%;
-  min-width: $message_text_display_width;
-  max-width: 20%;
-  margin-left: 16px;
-  margin-right: 64px;
-  margin-block: auto;
-  position: relative;
-  //left: 1em;
-  font-weight: bold;
+  width: 100vw;
 
+  margin: 0px;
+  font-weight: bold;
+  padding: 0;
   overflow-wrap: break-word;
   font-size: 2em;
   //-webkit-text-stroke: .1px white;
@@ -180,74 +188,35 @@ $message_text_display_width: 0px;
 }
 
 
-.function_buttons {
-  position: absolute;
-  width: 100%;
-  height: fit-content;
-  bottom: 0;
-}
 
-
-.line_change_target_btn , .function_buttons button {
+.line_change_target_btn {
 
   font-size: 24px;
-  height: 64px;
+  height: 100%;
+  margin: 0;
 }
 
 
 .line_button {
-  width: 100%;
-  height: 5em;
-
+  width: 9%;
+  margin: 0;
+  height: 100%;
+  display: inline-block;
   background-color: rgb(6, 199, 85);
+  top:0px;
   //position: absolute;
   //bottom: 0;
 
   font-size: 16px;
   text-align: center;
 
-  //display: flex;
-  flex-direction: column;
-  justify-content: center;
-
   pointer-events: auto;
-}
-
-.my_note {
-  //background-color: rgba(200,200,200,0.8);
-  background: linear-gradient(to right,
-    rgba(200,200,200,0.8),
-    rgba(200,200,200,0.1),
-    rgba(200,200,200,0.8),
-  );
-  text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.4);
-
-  height: 95%;
-  width: 20%;
-  position: absolute;
-  right: 1em;
-  font-weight: bold;
-
-  overflow-wrap: break-word;
-  pointer-events: none;
-  font-size: x-large;
-  //-webkit-text-stroke: .1px white;
-  //text-stroke: .1;
-
-  z-index: 10;
 }
 
 /**
  * post-processing of SCSS
 */
 
-.right_ui_buttons {
-  height:5em;
-  display: block;
-  width: 95%;
-  margin: auto;
-  pointer-events:auto;
-}
 
 .cursor_ui_buttons {
   display: inline-block;
