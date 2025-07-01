@@ -57,7 +57,7 @@ const usingUiInitial = [
   {from: 0, to: 0},
   {from: 0, to: 0},
 ];
-const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行,ら行,わ-ん行".split(',');
+const consonants_display: string[] = "あ記号,か行,さ行,た行,な/数,は行,ま行,や行,ら行,わん行".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
 //const decorations: string = "゛゜小";
 //const decorations_display: string = "゛゜小";
@@ -74,11 +74,11 @@ const decoration_premise = [
   'あいうえおつやゆよ'
 ]
 const hiraganaDict = [
-  'あいうえお',
+  'あいうえお「」（）～：／',
   'かきくけこがぎぐげご',
   'さしすせそざじずぜぞ',
   'たちつてとだぢづでど＿＿っ＿＿',
-  'なにぬねの',
+  'なにぬねの1234567890',
   'はひふへほばびぶべぼぱぴぷぺぽ',
   'まみむめも',
   'や？ゆ！よゃ＿ゅ＿ょ',
@@ -491,6 +491,17 @@ const Home = () => {
         <div className={styles.left_bottom_ui_container}>
         </div>
       </div>
+      <CustomButton
+                  layer={3}
+                  rawId={0}
+                  className={`${styles.augumented_deletebutton}`}
+                  onClick={()=>uiClicked( { layer: 3, rawId: 0, options: {
+                click: true
+              } })}
+                  >
+                  <div>削除</div>
+                  </CustomButton>
+
       <div className={styles.input_ui_container}>
         {
           (function(){

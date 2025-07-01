@@ -53,7 +53,7 @@ $message_text_display_width: 0px;
   //display: inline-flex;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(6, 1fr);// repeat(3, 0.75fr);
+  grid-template-rows: repeat(5, 1fr);// repeat(3, 0.75fr);
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -241,4 +241,13 @@ $message_text_display_width: 0px;
   width: 100%;
   height: 100%;
   font-size: xxx-large;
+}
+
+.augumented_deletebutton {
+  background-color: orange;
+  position: fixed;
+  right: 5%;//calc( ( 100% - ( 100vmin / 3 * 4 * ( 3 / 3.75 ) ) )  / 2 );
+  bottom: 5%;
+  width: 120px;
+  height: 120px;
 }
