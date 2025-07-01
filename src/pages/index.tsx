@@ -59,8 +59,8 @@ const usingUiInitial = [
 ];
 const consonants_display: string[] = "あ行,か行,さ行,た行,な行,は行,ま行,や行,ら行,わ-ん行".split(',');
 //const consonants: string = " kstnhmyrw";//スペースは中身無しの文字列に置換する
-const decorations: string = "゛゜小";
-const decorations_display: string = "゛゜小";
+//const decorations: string = "゛゜小";
+//const decorations_display: string = "゛゜小";
 const functions_display: string[] = "削除,🍊".split(',');
 const ui_premise = [
   [-1,0,1,2],
@@ -75,15 +75,18 @@ const decoration_premise = [
 ]
 const hiraganaDict = [
   'あいうえお',
-  'かきくけこ',
-  'さしすせそ',
-  'たちつてと',
+  'かきくけこがぎぐげご',
+  'さしすせそざじずぜぞ',
+  'たちつてとだぢづでど＿＿っ＿＿',
   'なにぬねの',
-  'はひふへほ',
+  'はひふへほばびぶべぼぱぴぷぺぽ',
   'まみむめも',
-  'や？ゆ！よ',
+  'や？ゆ！よゃ＿ゅ＿ょ',
   'らりるれろ',
   ['わ','ー','を','。','ん']
+]
+const hiraganaOptionsCount = [
+  0, 1,1,2,0,2,0,1,0,0,
 ]
 const lowerHiraganaDict = {
   'つ':'っ',
@@ -99,10 +102,10 @@ const lowerHiraganaDict = {
 const emojies: string[] =
 [
   //'0,1,2,3,4,5,6,7,8,9,'+
-  '👍','👎','👈','👉','👆',
-  '👇','😀','😢','🤣','',
-  '','','','','',
-  '','','',''
+  '「','」','（','）','～','：',
+  '／','1','2','3',
+  '4','5','6','7','8',
+  '9','0','👍','👎',
 ];
 const emojiFunctions = '削除,戻る'.split(',');
 
@@ -237,7 +240,7 @@ const Home = () => {
     sendingNow.current = false;
   }
 
-  function newUiHandler(type: number, index: number) {
+  function newUiHandler(type: number, index: number, arg: number = -1) {
     if(emojiMode) {
       lastActivated.current[0] = 0;
       lastActivated.current[1] = index;
@@ -267,11 +270,29 @@ const Home = () => {
         const addingHiragana =
           hiraganaDict[lastConsonantIndex.current][index];
         setMssageText( messageText + addingHiragana );
-        lastConsonantIndex.current = 0;
+        //lastConsonantIndex.current = 0;
       }
 
       lastActivated.current[0] = 1;
       lastActivated.current[1] = index;
+
+      switch(arg) {
+        case 0:
+          setMssageText( messageText + '゛' );
+          break;
+        case 1:
+          setMssageText( messageText + '゜' );
+          break;
+        case 2:
+          const c = Array.from(messageText).slice(-1);
+          setMssageText(
+            Array.from(messageText).slice(0,-1).join('') +
+
+            (lowerHiraganaDict?.[c] ?? c)
+
+          )
+          break;
+      }
     } else if(type === 2) {//decoration
       switch(index) {
         case 0:
@@ -489,12 +510,12 @@ const Home = () => {
             let buttonType = 0;
             let buttonIndex = 0;
             const buttonMatrixWidth = 5;
-            const buttonMatrixHeight = 3;
-            const decorationButtonCount = decorations_display.length;
+            const buttonMatrixHeight = 5;
+            //const decorationButtonCount = decorations_display.length;
             const functionButtonCount = functions_display.length;
             const buttonCount =
-              buttonMatrixHeight * buttonMatrixWidth +
-              decorationButtonCount + functionButtonCount;
+              buttonMatrixHeight * buttonMatrixWidth //+
+              //decorationButtonCount + functionButtonCount;
             for(
               let i = 0;
               i < buttonCount;
@@ -508,8 +529,8 @@ const Home = () => {
               }
               else if(
                 i === 2 * buttonMatrixWidth ||
-                i === 3 * buttonMatrixWidth ||
-                i === 3 * buttonMatrixWidth + decorationButtonCount
+                i === 5 * buttonMatrixWidth //||
+                //i === 3 * buttonMatrixWidth + decorationButtonCount
               ) {
                 buttonType++;
                 buttonIndex = 0;
@@ -528,12 +549,12 @@ const Home = () => {
                     lastActivated.current[1] === buttonIndex
                     ? "#000000"
                     :ui_premise[buttonType].includes(lastActivated.current[0])
-                      ? buttonType === 2
+                      ? /*buttonType === 2
                         ? ( decoration_premise[buttonIndex].includes(messageText.slice(-1))
                           ? '#FFFFFF'
                           : '#999999'
-                        )
-                      : '#FFFFFF'
+                        )*/
+                        /*:*/ '#FFFFFF'
                       : '#999999',
                     color:
                     lastActivated.current[0] === buttonType &&
@@ -556,9 +577,9 @@ const Home = () => {
                             ? hiraganaDict[lastConsonantIndex.current][buttonIndex]
                             : '行を選択！'[buttonIndex]
                           )
-                        : buttonType === 2
-                        ? decorations_display[buttonIndex]
-                        : functions_display[buttonIndex]
+                        :// buttonType === 2
+                        //? decorations_display[buttonIndex]
+                        /*:*/ functions_display[buttonIndex]
                   }</div>
                 </CustomButton>;
               buttons.push(button);
