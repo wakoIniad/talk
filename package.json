@@ -20,7 +20,7 @@
     "@langchain/community": "^0.3.5",
     "@langchain/core": "^0.3.11",
     "@langchain/openai": "^0.3.7",
-    "axios": "^1.7.7",
+    "axios": "^1.17.0",
     "js-hira-kata-romanize": "^1.0.5",
     "langchain": "^0.3.2",
     "mysql": "^2.18.1",
